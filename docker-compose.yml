@@ -1,0 +1,14 @@
+services:
+  codepad:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PASSWORD: "bitte-aendern"   # <- eigenes Passwort eintragen!
+      RUN_TIMEOUT: "60"           # max. Laufzeit eines Programms in Sekunden
+    volumes:
+      - codepad-data:/data        # hier liegen deine Dateien
+
+volumes:
+  codepad-data:
