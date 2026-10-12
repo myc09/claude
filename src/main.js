@@ -8,7 +8,9 @@ import { indentUnit } from '@codemirror/language';
 import { openSearchPanel } from '@codemirror/search';
 import { python } from '@codemirror/lang-python';
 import { cpp } from '@codemirror/lang-cpp';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { animeTheme } from './theme.js';
+import { Mascot } from './mascot.js';
+import { Sakura, fx, Combo, Progress, levelBanner } from './effects.js';
 
 const $ = (id) => document.getElementById(id);
 const clientId = Math.random().toString(36).slice(2);
@@ -60,6 +62,8 @@ function toast(text, isError = false) {
 // ---------------- Login ----------------
 
 function showLogin() {
+  $('login-mascot').appendChild(mascot.el);
+  mascot.set('happy', '', 0);
   $('app').classList.add('hidden');
   $('login').classList.remove('hidden');
   $('login-password').focus();
@@ -76,10 +80,12 @@ $('login-form').addEventListener('submit', async (e) => {
   if (res.ok) {
     $('login-password').value = '';
     $('login').classList.add('hidden');
+    $('mascot-home').appendChild(mascot.el);
     start();
   } else {
     const data = await res.json().catch(() => ({}));
-    $('login-error').textContent = data.error || 'Anmeldung fehlgeschlagen';
+    $('login-error').textContent = (data.error || 'Anmeldung fehlgeschlagen') + ' (╥﹏╥)';
+    mascot.set('sad', '', 2500);
   }
 });
 
@@ -107,7 +113,7 @@ function createState(path, content) {
     doc: content,
     extensions: [
       basicSetup,
-      oneDark,
+      animeTheme,
       indentUnit.of('    '),
       EditorState.tabSize.of(4),
       langConf.of(languageFor(path)),
@@ -119,7 +125,7 @@ function createState(path, content) {
         { key: 'F5', run: () => { runActive(); return true; }, preventDefault: true },
         indentWithTab,
       ]),
-      EditorView.updateListener.of((u) => { if (u.docChanged) onEdit(); }),
+      EditorView.updateListener.of((u) => { if (u.docChanged) { onEdit(); onTyping(u); } }),
     ],
   });
 }
@@ -129,6 +135,54 @@ const view = new EditorView({ parent: $('editor'), state: createState('', '') })
 function reconfigureAll(effectsFor) {
   view.dispatch({ effects: effectsFor() });
   for (const tab of tabs) if (tab !== activeTab()) tab.state = tab.state.update({ effects: effectsFor() }).state;
+}
+
+// ---------------- Anime-Extras ----------------
+
+const settings = {
+  theme: store.get('theme', 'sakura'),
+  fx: store.get('fx', true),
+  petals: store.get('petals', true),
+  mascot: store.get('mascot', true),
+};
+const sakura = new Sakura();
+const mascot = new Mascot($('mascot-home'));
+let combo = null;
+let progress = null;
+let typedChars = 0;
+let lastRunFailed = false;
+
+function applySettings() {
+  document.documentElement.dataset.theme = settings.theme;
+  const anime = settings.theme !== 'classic';
+  fx.enabled = settings.fx && anime;
+  sakura.setEnabled(settings.petals && anime);
+  document.body.classList.toggle('no-mascot', !settings.mascot);
+  document.querySelector('meta[name="theme-color"]').content =
+    { sakura: '#1b1033', neon: '#070b1c', matcha: '#0f1d18', classic: '#333333' }[settings.theme];
+  document.querySelectorAll('[data-theme-pick]').forEach((b) => b.classList.toggle('on', b.dataset.themePick === settings.theme));
+}
+
+function onTyping(update) {
+  if (!update.transactions.some((tr) => tr.isUserEvent('input') || tr.isUserEvent('delete'))) return;
+  let inserted = 0;
+  update.changes.iterChanges((fa, ta, fb, tb, text) => { inserted += text.length; });
+  const n = combo.hit();
+  typedChars += inserted;
+  if (typedChars >= 40) { progress.add(Math.floor(typedChars / 40)); typedChars %= 40; }
+  if (!fx.enabled) return;
+  const pos = update.state.selection.main.head;
+  view.requestMeasure({
+    read: (v) => v.coordsAtPos(pos),
+    write: (c) => c && fx.typing(c.left, c.top + (c.bottom - c.top) / 2, n),
+  });
+}
+
+function onLevelUp(level) {
+  levelBanner(level);
+  fx.confetti();
+  if (settings.petals) sakura.storm();
+  mascot.say('level', level);
 }
 
 // ---------------- Tabs & Speichern ----------------
@@ -710,6 +764,8 @@ async function runActive() {
   $('stdin-form').classList.add('active');
   togglePanel(true);
   ws.send(JSON.stringify({ type: 'run', path: tab.path }));
+  fx.burst($('btn-stop'));
+  mascot.say('run');
   // Auf dem Handy direkt das Eingabefeld fokussieren, wenn das Programm input()/scanf nutzt
   const src = tabContent(tab);
   if (/\binput\s*\(|\bscanf\s*\(|\bgetchar\s*\(|\bfgets\s*\(|\bcin\s*>>/.test(src)) setTimeout(() => $('stdin').focus(), 50);
@@ -720,6 +776,16 @@ function finishRun(text, ok = false) {
   if (out.textContent && !out.textContent.endsWith('\n')) append('\n');
   append(`\n[${text}]\n`, ok ? 'ok' : 'info');
   linkifyErrors();
+  if (ok) {
+    mascot.say('ok');
+    fx.confetti();
+    progress.add(lastRunFailed ? 25 : 15);
+    if (lastRunFailed) toast('Bug besiegt! +25 XP ⚔️');
+  } else if (!/gestoppt/.test(text)) {
+    mascot.say('error');
+    fx.shake();
+  } else mascot.set('idle', '', 1);
+  lastRunFailed = !ok;
   $('run-status').textContent = '';
   $('btn-run').classList.remove('hidden');
   $('btn-stop').classList.add('hidden');
@@ -758,10 +824,23 @@ $('btn-more').addEventListener('click', () => $('more-menu').classList.toggle('h
 $('panel').querySelector('.panel-head').addEventListener('dblclick', () => togglePanel());
 
 $('more-menu').addEventListener('click', async (e) => {
+  const pick = e.target.closest('[data-theme-pick]');
+  if (pick) {
+    settings.theme = pick.dataset.themePick;
+    store.set('theme', settings.theme);
+    applySettings();
+    fx.burst(pick, 10);
+    return;
+  }
   const action = e.target.dataset.action;
   if (!action) return;
   closeMenus();
-  if (action === 'font-up' || action === 'font-down') {
+  if (['fx', 'petals', 'mascot'].includes(action)) {
+    settings[action] = !settings[action];
+    store.set(action, settings[action]);
+    applySettings();
+    toast(`${{ fx: 'Effekte', petals: 'Sakura-Blüten', mascot: 'Code-chan' }[action]} ${settings[action] ? 'an ✨' : 'aus'}`);
+  } else if (action === 'font-up' || action === 'font-down') {
     fontSize = Math.max(9, Math.min(28, fontSize + (action === 'font-up' ? 1 : -1)));
     store.set('fontSize', fontSize);
     reconfigureAll(() => fontConf.reconfigure(fontTheme(fontSize)));
@@ -814,6 +893,9 @@ async function start() {
   if (started) return;
   started = true;
   $('app').classList.remove('hidden');
+  $('mascot-home').appendChild(mascot.el);
+  combo = new Combo($('editor-wrap'), (n) => { mascot.say('combo'); progress.add(Math.round(n / 5)); });
+  progress = new Progress(store, onLevelUp);
   setupResizers();
   setupKeys();
   await loadTree();
@@ -828,7 +910,10 @@ async function start() {
   }
   if (isMobile()) closeSidebar();
   updateTitle();
+  setTimeout(() => mascot.say('greet'), 600);
 }
+
+applySettings();
 
 (async () => {
   const me = await fetch('/api/me').then((r) => r.json()).catch(() => ({ authed: false }));
