@@ -382,6 +382,7 @@ function renderTabs() {
   for (const tab of tabs) {
     const div = document.createElement('div');
     div.className = 'tab' + (tab.path === activePath ? ' active' : '') + (isDirty(tab) ? ' dirty' : '');
+    div.dataset.kind = kindOf(tab.path);
     div.title = tab.path;
     const name = tab.path.split('/').pop();
     div.innerHTML = `<span class="ficon ${iconClass(name)}">${iconText(name)}</span><span></span>` +
@@ -433,6 +434,12 @@ function iconText(name) {
   return { py: 'py', c: 'C', h: 'h', cpp: '++', cc: '++', hpp: 'h', md: 'M↓', json: '{}', txt: '≡' }[ext] || '·';
 }
 
+// Bestimmt die Leuchtfarbe von Tab und Datei (siehe data-kind im CSS)
+function kindOf(name) {
+  const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+  return { py: 'py', c: 'c', cpp: 'cpp', cc: 'cpp', h: 'h', hpp: 'h' }[ext] || 'other';
+}
+
 function iconClass(name) {
   const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
   return { py: 'ic-py', c: 'ic-c', h: 'ic-h', hpp: 'ic-h', cpp: 'ic-cpp', cc: 'ic-cpp' }[ext] || 'ic-txt';
@@ -446,6 +453,7 @@ function renderTree() {
       const row = document.createElement('div');
       const open = node.type === 'dir' && expanded.has(node.path);
       row.className = 'node' + (open ? ' open' : '') + (node.path === activePath ? ' active' : '');
+      row.dataset.kind = node.type === 'dir' ? 'dir' : kindOf(node.name);
       row.style.paddingLeft = 8 + depth * 14 + 'px';
       row.draggable = !isMobile();
       row.innerHTML =

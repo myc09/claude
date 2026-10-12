@@ -28,7 +28,9 @@ export class Sakura {
   }
 
   spawn(top = false) {
+    const list = this.colors || ['#ffb7d5'];
     return {
+      color: list[Math.floor(Math.random() * list.length)],
       x: Math.random() * this.w,
       y: top ? -20 : Math.random() * this.h,
       r: 4 + Math.random() * 5,
@@ -41,7 +43,16 @@ export class Sakura {
     };
   }
 
+  // Blütenfarben aus dem Theme lesen (--petals: Liste von Farben)
+  refreshColors() {
+    const css = getComputedStyle(document.documentElement);
+    const list = (css.getPropertyValue('--petals') || css.getPropertyValue('--petal')).split(',').map((c) => c.trim()).filter(Boolean);
+    this.colors = list.length ? list : ['#ffb7d5'];
+    for (const p of this.petals) p.color = this.colors[Math.floor(Math.random() * this.colors.length)];
+  }
+
   setEnabled(on) {
+    this.refreshColors();
     this.enabled = on && !reduceMotion;
     this.canvas.style.display = this.enabled ? '' : 'none';
     this.enabled ? this.start() : this.stop();
@@ -72,7 +83,6 @@ export class Sakura {
   draw() {
     const { ctx, w, h } = this;
     ctx.clearRect(0, 0, w, h);
-    const color = getComputedStyle(document.documentElement).getPropertyValue('--petal').trim() || '#ffb7d5';
     for (let i = this.petals.length - 1; i >= 0; i--) {
       const p = this.petals[i];
       p.sway += 0.015;
@@ -88,7 +98,7 @@ export class Sakura {
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
       ctx.scale(1, Math.abs(Math.cos(p.flip)) * 0.7 + 0.3);
-      ctx.fillStyle = color;
+      ctx.fillStyle = p.color;
       ctx.globalAlpha = 0.75;
       // Blütenblatt mit kleiner Kerbe
       ctx.beginPath();
@@ -121,7 +131,7 @@ function particle(x, y, { chars = SPARKS, spread = 40, rise = 30, size = 14, lif
   const el = document.createElement('span');
   el.className = 'fx-spark';
   el.textContent = chars[Math.floor(Math.random() * chars.length)];
-  const pal = colors || ['var(--accent)', 'var(--accent-2)', 'var(--accent-3)'];
+  const pal = colors || ['var(--accent)', 'var(--accent-2)', 'var(--accent-3)', 'var(--accent-4)', 'var(--accent-5)'];
   el.style.color = pal[Math.floor(Math.random() * pal.length)];
   el.style.left = x + 'px';
   el.style.top = y + 'px';

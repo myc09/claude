@@ -1,29 +1,31 @@
 /* ================= Themes ================= */
 :root, [data-theme="sakura"] {
-  --bg-1: #1b1033; --bg-2: #2a1145; --bg-3: #0f1a3a;
-  --surface: rgba(30, 18, 58, .78);
-  --surface-2: rgba(40, 24, 74, .85);
-  --panel: #251744;
-  --bar: rgba(34, 20, 64, .9);
+  --bg-1: #0a0e27; --bg-2: #1d1350; --bg-3: #052c3d;
+  --surface: rgba(16, 20, 52, .78);
+  --surface-2: rgba(20, 24, 62, .85);
+  --panel: #151a40;
+  --bar: rgba(16, 20, 50, .9);
   --input: rgba(255, 255, 255, .06);
-  --border: rgba(255, 140, 200, .18);
-  --text: #f3e9ff; --text-dim: #a996c9; --ed-text: #f1e6ff;
-  --accent: #ff6fb5; --accent-2: #7ee8fa; --accent-3: #ffd86f;
-  --accent-soft: rgba(255, 111, 181, .35);
-  --on-accent: #fff;
-  --chip: rgba(255, 111, 181, .16);
-  --danger: #ff5c7a; --ok: #8ef0b0; --warn: #ffd86f;
-  --caret: #ff9bd0; --selection: rgba(255, 111, 181, .28); --selection-match: rgba(126, 232, 250, .15);
-  --active-line: rgba(255, 255, 255, .045); --gutter: #6f5a96; --bracket: rgba(126, 232, 250, .18); --search: rgba(255, 216, 111, .3);
-  --syn-keyword: #ff7ac6; --syn-func: #7ee8fa; --syn-def: #ffd6a5; --syn-type: #c3a6ff; --syn-string: #b5f5a8;
-  --syn-number: #ffb86b; --syn-comment: #8b7bb0; --syn-meta: #ff9ecf; --syn-op: #ffd86f; --syn-prop: #9fd7ff; --syn-punct: #c9b8ea;
-  --shadow: rgba(10, 0, 30, .55);
-  --petal: #ffb7d5;
-  --glow: 0 0 18px rgba(255, 111, 181, .55);
-  --run-grad: linear-gradient(135deg, #ff6fb5, #ff9a6f);
+  --border: rgba(160, 180, 255, .16);
+  --text: #eef1ff; --text-dim: #9aa3c9; --ed-text: #eef0ff;
+  /* Fünf Farben statt einer: Pink, Cyan, Gold, Violett, Mint */
+  --accent: #ff6fb5; --accent-2: #5ee7ff; --accent-3: #ffd166; --accent-4: #a78bfa; --accent-5: #5eead4;
+  --accent-soft: rgba(94, 231, 255, .3);
+  --on-accent: #0a0e27;
+  --chip: rgba(140, 160, 255, .12);
+  --danger: #ff5c7a; --ok: #7ef0c0; --warn: #ffd166;
+  --caret: #5ee7ff; --selection: rgba(94, 231, 255, .22); --selection-match: rgba(167, 139, 250, .2);
+  --active-line: rgba(255, 255, 255, .045); --gutter: #5b6795; --bracket: rgba(255, 209, 102, .2); --search: rgba(255, 209, 102, .3);
+  --syn-keyword: #ff7ac6; --syn-func: #5ee7ff; --syn-def: #ffd6a5; --syn-type: #b69cff; --syn-string: #7ef0c0;
+  --syn-number: #ffb86b; --syn-comment: #6f7aa8; --syn-meta: #ff9ecf; --syn-op: #ffd166; --syn-prop: #9fd7ff; --syn-punct: #b7bfe6;
+  --shadow: rgba(2, 4, 20, .55);
+  --petal: #ffb7d5; --petals: #ffb7d5, #c4b5fd, #ffd6a5, #a5f3fc, #ffffff;
+  --glow: 0 0 18px rgba(94, 231, 255, .4);
+  --run-grad: linear-gradient(120deg, #ff6fb5, #ffb86b, #5eead4, #5ee7ff, #a78bfa, #ff6fb5);
+  --h1: #ff6fb5; --h2: #ffd166; --h3: #5eead4; --h4: #5ee7ff; --h5: #a78bfa;
   /* Code-chan */
-  --hair-1: #ffa6d2; --hair-2: #f064a8; --ear-in: #ffd3e8; --skin: #ffeee4; --blush: #ff9fbf; --line: #4a2350;
-  --eye-1: #b48cff; --eye-2: #5b2aa8; --mouth: #ff7a9a; --outfit: #3b2a6e; --outfit-line: #ff6fb5; --clip: #ffd86f;
+  --hair-1: #ffa6d2; --hair-2: #f064a8; --ear-in: #ffd3e8; --skin: #ffeee4; --blush: #ff9fbf; --line: #2a2350;
+  --eye-1: #7ee8fa; --eye-2: #4338ca; --mouth: #ff7a9a; --outfit: #1e2a5e; --outfit-line: #5ee7ff; --clip: #ffd166;
 }
 
 [data-theme="neon"] {
@@ -36,8 +38,9 @@
   --gutter: #3e5583; --bracket: rgba(255, 43, 214, .2);
   --syn-keyword: #ff2bd6; --syn-func: #00f0ff; --syn-def: #f8ff4d; --syn-type: #a77bff; --syn-string: #5dffa8;
   --syn-number: #ffae3d; --syn-comment: #5a6f99; --syn-meta: #ff6ad5; --syn-op: #f8ff4d; --syn-prop: #7fd8ff; --syn-punct: #9fb2d9;
-  --petal: #ff7be5; --glow: 0 0 18px rgba(0, 240, 255, .6);
-  --run-grad: linear-gradient(135deg, #00f0ff, #ff2bd6);
+  --petal: #ff7be5; --petals: #ff7be5, #00f0ff, #f8ff4d, #a77bff; --glow: 0 0 18px rgba(0, 240, 255, .6);
+  --accent-4: #a77bff; --accent-5: #3dff9e; --h1: #00f0ff; --h2: #ff2bd6; --h3: #a77bff; --h4: #f8ff4d; --h5: #3dff9e;
+  --run-grad: linear-gradient(120deg, #00f0ff, #a77bff, #ff2bd6, #f8ff4d, #00f0ff);
   --hair-1: #7af7ff; --hair-2: #2a7fff; --ear-in: #b9f6ff; --eye-1: #ff7be5; --eye-2: #8a1a9e; --outfit: #1b1640; --outfit-line: #00f0ff; --clip: #ff2bd6;
 }
 
@@ -51,8 +54,9 @@
   --gutter: #5a7a66; --bracket: rgba(255, 179, 199, .2);
   --syn-keyword: #ffb3c7; --syn-func: #9be38a; --syn-def: #ffe39a; --syn-type: #9fd8cb; --syn-string: #d6f5a0;
   --syn-number: #ffc48a; --syn-comment: #6f8d79; --syn-meta: #ffa3b8; --syn-op: #ffe39a; --syn-prop: #b0e6d6; --syn-punct: #a9c2b0;
-  --petal: #ffc9d8; --glow: 0 0 18px rgba(155, 227, 138, .5);
-  --run-grad: linear-gradient(135deg, #7fd36e, #3fb98a);
+  --petal: #ffc9d8; --petals: #ffc9d8, #ffffff, #d6f5a0, #ffe39a; --glow: 0 0 18px rgba(155, 227, 138, .5);
+  --accent-4: #9fd8cb; --accent-5: #ffc48a; --h1: #9be38a; --h2: #ffe39a; --h3: #ffb3c7; --h4: #9fd8cb; --h5: #5fd3a0;
+  --run-grad: linear-gradient(120deg, #9be38a, #5fd3a0, #9fd8cb, #ffe39a, #9be38a);
   --hair-1: #b8e8a0; --hair-2: #5fae6a; --ear-in: #e3f7d6; --eye-1: #ffb3c7; --eye-2: #b23a64; --outfit: #2c4535; --outfit-line: #ffb3c7; --clip: #ffb3c7;
 }
 
@@ -65,7 +69,7 @@
   --gutter: #858585; --bracket: rgba(255, 255, 255, .1);
   --syn-keyword: #c586c0; --syn-func: #dcdcaa; --syn-def: #9cdcfe; --syn-type: #4ec9b0; --syn-string: #ce9178;
   --syn-number: #b5cea8; --syn-comment: #6a9955; --syn-meta: #c586c0; --syn-op: #d4d4d4; --syn-prop: #9cdcfe; --syn-punct: #d4d4d4;
-  --petal: transparent; --glow: none; --run-grad: linear-gradient(#16a34a, #16a34a);
+  --petal: transparent; --petals: transparent; --accent-4: #c586c0; --accent-5: #4ec9b0; --glow: none; --run-grad: linear-gradient(#16a34a, #16a34a);
 }
 
 /* ================= Basis ================= */
@@ -334,9 +338,9 @@ body.no-mascot .output { padding-right: 18px; }
 
 /* ================= Glas & Futuristisch ================= */
 :root, [data-theme="sakura"] {
-  --orb-1: #ff4fa8; --orb-2: #6a3bff; --orb-3: #22d3ee; --orb-4: #ffb36b;
-  --glass: rgba(28, 16, 56, .42); --glass-strong: rgba(30, 18, 60, .62);
-  --glass-edge: rgba(255, 255, 255, .28); --grid: rgba(255, 111, 181, .28);
+  --orb-1: #22d3ee; --orb-2: #7c3aed; --orb-3: #ff4fa8; --orb-4: #fbbf24;
+  --glass: rgba(14, 18, 48, .42); --glass-strong: rgba(16, 20, 54, .64);
+  --glass-edge: rgba(255, 255, 255, .28); --grid: rgba(94, 231, 255, .25);
 }
 [data-theme="neon"] {
   --orb-1: #00e5ff; --orb-2: #ff2bd6; --orb-3: #3b2bff; --orb-4: #f8ff4d;
@@ -380,20 +384,23 @@ body.no-mascot .output { padding-right: 18px; }
 }
 .glass::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 3;
-  background: linear-gradient(135deg, var(--glass-edge), rgba(255,255,255,.04) 35%, rgba(255,255,255,.02) 60%, var(--accent-soft));
+  background: conic-gradient(from var(--spin), var(--h1), var(--h2), var(--h3), var(--h4), var(--h5), var(--h1));
+  opacity: .55; animation: edgespin 10s linear infinite;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
+@property --spin { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes edgespin { to { --spin: 360deg; } }
 /* HUD-Ecken */
 .hud::after {
   content: ''; position: absolute; inset: 6px; pointer-events: none; z-index: 3; border-radius: 14px; opacity: .8;
   --c: var(--accent); --l: 16px; --t: 2px;
   background:
-    linear-gradient(var(--c), var(--c)) top left / var(--l) var(--t), linear-gradient(var(--c), var(--c)) top left / var(--t) var(--l),
-    linear-gradient(var(--c), var(--c)) top right / var(--l) var(--t), linear-gradient(var(--c), var(--c)) top right / var(--t) var(--l),
-    linear-gradient(var(--accent-2), var(--accent-2)) bottom left / var(--l) var(--t), linear-gradient(var(--accent-2), var(--accent-2)) bottom left / var(--t) var(--l),
-    linear-gradient(var(--accent-2), var(--accent-2)) bottom right / var(--l) var(--t), linear-gradient(var(--accent-2), var(--accent-2)) bottom right / var(--t) var(--l);
-  background-repeat: no-repeat; filter: drop-shadow(0 0 4px var(--c));
+    linear-gradient(var(--h1), var(--h1)) top left / var(--l) var(--t), linear-gradient(var(--h1), var(--h1)) top left / var(--t) var(--l),
+    linear-gradient(var(--h2), var(--h2)) top right / var(--l) var(--t), linear-gradient(var(--h2), var(--h2)) top right / var(--t) var(--l),
+    linear-gradient(var(--h4), var(--h4)) bottom left / var(--l) var(--t), linear-gradient(var(--h4), var(--h4)) bottom left / var(--t) var(--l),
+    linear-gradient(var(--h5), var(--h5)) bottom right / var(--l) var(--t), linear-gradient(var(--h5), var(--h5)) bottom right / var(--t) var(--l);
+  background-repeat: no-repeat; filter: drop-shadow(0 0 4px rgba(255,255,255,.35));
 }
 [data-theme="classic"] .glass { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--glass); border-radius: 6px; box-shadow: none; }
 [data-theme="classic"] .glass::before, [data-theme="classic"] .hud::after { display: none; }
@@ -448,6 +455,52 @@ body.no-mascot .output { padding-right: 18px; }
 /* Futuristische Schrift-Akzente */
 .sidebar-head, .panel-head { font-family: var(--mono); letter-spacing: 2px; }
 .panel-title { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+
+/* ================= Farbvielfalt ================= */
+:root { --holo: linear-gradient(90deg, var(--h1), var(--h2), var(--h3), var(--h4), var(--h5)); }
+.logo { background: linear-gradient(90deg, var(--h1), var(--h2) 30%, var(--h3) 55%, var(--h4) 75%, var(--h5)); -webkit-background-clip: text; background-clip: text; }
+.logo span { background: none; -webkit-background-clip: initial; background-clip: initial; color: transparent; }
+.logo-jp { background: var(--holo); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.topbar::after { background: var(--holo); opacity: .8; }
+.xp-fill { background: var(--holo); box-shadow: 0 0 10px var(--h4); }
+.xp-lv { color: var(--accent-3); }
+.brand { color: var(--accent-3); text-shadow: 0 0 12px var(--accent-3); }
+
+/* Jeder Bereich hat seine eigene Farbe */
+.sidebar-head em { color: var(--accent-5); }
+.panel-title em { color: var(--accent-2); }
+.sidebar-head .icon-btn:hover { color: var(--accent-5); }
+.panel-head .icon-btn:hover { color: var(--accent-2); }
+.icon-btn:hover { color: var(--accent-2); }
+.menu button:hover { background: color-mix(in srgb, var(--accent-4) 22%, transparent); color: var(--text); }
+.menu-label { color: var(--accent-3); }
+.stdin .prompt { color: var(--accent-5); }
+.stdin:focus-within { border-color: var(--accent-5); }
+.output .stdin-echo { color: var(--accent-3); }
+.run-status { color: var(--accent-3); }
+.sb-lang { color: var(--accent-4); }
+.sb-item:nth-child(4) { color: var(--accent-2); }
+
+/* Tabs und Dateien leuchten in der Farbe ihrer Sprache */
+.tab, .node { --tc: var(--accent-5); }
+.tab[data-kind="py"], .node[data-kind="py"] { --tc: var(--accent-3); }
+.tab[data-kind="c"], .node[data-kind="c"] { --tc: var(--accent-2); }
+.tab[data-kind="cpp"], .node[data-kind="cpp"] { --tc: var(--accent); }
+.tab[data-kind="h"], .node[data-kind="h"] { --tc: var(--accent-4); }
+.ic-py { color: var(--accent-3); } .ic-c { color: var(--accent-2); } .ic-cpp { color: var(--accent); } .ic-h { color: var(--accent-4); } .ic-dir { color: var(--accent-5); }
+.tab.active { background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 26%, transparent), rgba(255,255,255,.03)); box-shadow: inset 0 2px 0 var(--tc), 0 -4px 18px color-mix(in srgb, var(--tc) 30%, transparent); }
+.tab.dirty .close::after { color: var(--tc); }
+.node.active { background: linear-gradient(90deg, color-mix(in srgb, var(--tc) 28%, transparent), transparent); box-shadow: inset 3px 0 0 var(--tc); }
+.node:hover { background: color-mix(in srgb, var(--tc) 12%, transparent); }
+
+.sw-sakura { background: conic-gradient(from 200deg, #ff6fb5, #ffd166, #5eead4, #5ee7ff, #a78bfa, #ff6fb5) !important; }
+.lb-big { background: linear-gradient(180deg, #fff 10%, var(--h4) 50%, var(--h5)); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 4px 20px var(--h5)); }
+.lb-jp { background: var(--holo); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; }
+.login-box button { background: var(--run-grad); background-size: 220% 220%; animation: holo 6s ease infinite; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+.run-btn { text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+.login-box input:focus { border-color: var(--accent-2); }
+.combo span { background: var(--holo); -webkit-background-clip: text; background-clip: text; color: transparent; }
+[data-theme="classic"] .tab, [data-theme="classic"] .node { --tc: var(--accent); }
 
 /* ================= Handy ================= */
 @media (max-width: 760px) {
