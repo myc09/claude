@@ -18,9 +18,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Futuristischer Hintergrund: Aurora-Kugeln + Perspektiv-Gitter -->
+  <div class="bg-fx" aria-hidden="true">
+    <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div><div class="orb orb-4"></div>
+    <div class="grid-floor"></div>
+    <div class="noise"></div>
+  </div>
   <!-- Anmeldung -->
   <div id="login" class="login hidden">
-    <form id="login-form" class="login-box">
+    <form id="login-form" class="login-box glass hud">
       <div id="login-mascot" class="login-mascot"></div>
       <h1 class="logo">Code<span>Pad</span></h1>
       <div class="logo-jp">コードパッド ✦ Python &amp; C</div>
@@ -33,7 +39,7 @@
 
   <!-- Editor -->
   <div id="app" class="app hidden">
-    <header class="topbar">
+    <header class="topbar glass">
       <button id="btn-menu" class="icon-btn" title="Explorer (Strg+B)" aria-label="Explorer">
         <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
@@ -56,7 +62,7 @@
       <button id="btn-more" class="icon-btn" title="Mehr" aria-label="Mehr">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" class="fill"/><circle cx="12" cy="12" r="1.5" class="fill"/><circle cx="12" cy="19" r="1.5" class="fill"/></svg>
       </button>
-      <div id="more-menu" class="menu hidden">
+      <div id="more-menu" class="menu glass hidden">
         <div class="menu-label">Theme</div>
         <div class="theme-row">
           <button data-theme-pick="sakura" class="swatch sw-sakura" title="Sakura Night">桜</button>
@@ -78,7 +84,7 @@
     </header>
 
     <div class="main">
-      <aside id="sidebar" class="sidebar">
+      <aside id="sidebar" class="sidebar glass">
         <div class="sidebar-head">
           <span>EXPLORER <em>ファイル</em></span>
           <div class="sidebar-actions">
@@ -99,6 +105,7 @@
       <div id="sidebar-resizer" class="resizer-v"></div>
 
       <section class="workbench">
+        <div class="editor-card glass hud">
         <nav id="tabs" class="tabs"></nav>
         <div id="editor-wrap" class="editor-wrap">
           <div id="editor" class="editor"></div>
@@ -110,8 +117,9 @@
           </div>
         </div>
         <div id="keys" class="keys"></div>
+        </div>
         <div id="panel-resizer" class="resizer-h"></div>
-        <section id="panel" class="panel">
+        <section id="panel" class="panel glass">
           <div class="panel-head">
             <span class="panel-title">TERMINAL <em>出力</em></span>
             <span id="run-status" class="run-status"></span>
@@ -133,6 +141,15 @@
         </section>
       </section>
     </div>
+    <footer class="statusbar glass">
+      <span id="sb-conn" class="sb-item sb-conn">● OFFLINE</span>
+      <span id="sb-lang" class="sb-item"></span>
+      <span class="sb-spacer"></span>
+      <span id="sb-pos" class="sb-item"></span>
+      <span class="sb-item">UTF-8</span>
+      <span class="sb-item">SPACES: 4</span>
+      <span id="sb-clock" class="sb-item sb-clock"></span>
+    </footer>
   </div>
 
   <div id="toast" class="toast hidden"></div>

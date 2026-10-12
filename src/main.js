@@ -125,7 +125,7 @@ function createState(path, content) {
         { key: 'F5', run: () => { runActive(); return true; }, preventDefault: true },
         indentWithTab,
       ]),
-      EditorView.updateListener.of((u) => { if (u.docChanged) { onEdit(); onTyping(u); } }),
+      EditorView.updateListener.of((u) => { if (u.docChanged) { onEdit(); onTyping(u); } if (u.docChanged || u.selectionSet) updateStatus(u.state); }),
     ],
   });
 }
@@ -177,6 +177,32 @@ function onTyping(update) {
     write: (c) => c && fx.typing(c.left, c.top + (c.bottom - c.top) / 2, n),
   });
 }
+
+// ---------------- Statusleiste ----------------
+
+const LANG_NAMES = { py: 'PYTHON', c: 'C', h: 'C HEADER', cpp: 'C++', cc: 'C++', hpp: 'C++ HEADER', md: 'MARKDOWN', txt: 'TEXT' };
+
+function updateStatus(state = view.state) {
+  const tab = activeTab();
+  if (!tab) { $('sb-pos').textContent = ''; $('sb-lang').textContent = ''; return; }
+  const head = state.selection.main.head;
+  const line = state.doc.lineAt(head);
+  $('sb-pos').textContent = `LN ${line.number}, COL ${head - line.from + 1}`;
+  const ext = tab.path.split('.').pop().toLowerCase();
+  $('sb-lang').textContent = '⟨/⟩ ' + (LANG_NAMES[ext] || ext.toUpperCase());
+}
+
+function setConn(online) {
+  const el = $('sb-conn');
+  el.textContent = online ? '● ONLINE · SYNC' : '● OFFLINE';
+  el.classList.toggle('on', online);
+}
+
+function tickClock() {
+  $('sb-clock').textContent = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+tickClock();
+setInterval(tickClock, 15000);
 
 function onLevelUp(level) {
   levelBanner(level);
@@ -381,6 +407,7 @@ function updateTitle() {
   else if (isDirty(tab)) { st.textContent = '●'; st.classList.add('dirty'); }
   else st.textContent = 'gespeichert ✓';
   $('btn-run').disabled = !tab || !isRunnable(tab.path);
+  updateStatus();
 }
 
 function persistSession() {
@@ -704,11 +731,13 @@ function connect() {
   ws.onopen = () => {
     if (wsRetry > 0) { loadTree(); syncOpenTabs(); }
     wsRetry = 0;
+    setConn(true);
     tabs.forEach((t) => t.error && saveTab(t));
     updateTitle();
   };
   ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
   ws.onclose = () => {
+    setConn(false);
     if (running) finishRun('Verbindung unterbrochen');
     ws = null;
     const delay = Math.min(10000, 500 * 2 ** wsRetry++);

@@ -11,7 +11,9 @@ deinem Server, deshalb siehst und bearbeitest du überall denselben Stand, egal 
   denkt beim Kompilieren mit und schläft ein, wenn du lange nichts machst. Tippst du sie an, gibt sie dir einen Tipp.
 - **Combo-Zähler und Funken** beim Tippen, Konfetti bei erfolgreichem Ausführen, Wackeln bei Fehlern
 - **Level-System:** XP für Tippen, erfolgreiche Programme und besiegte Bugs, mit Level-up-Animation
-- **Fallende Sakura-Blüten** im Hintergrund
+- **Glas-Design:** schwebende Glas-Panels mit Unschärfe und Lichtkanten, HUD-Ecken, holografischer Ausführen-Knopf
+- **Futuristischer Hintergrund:** wandernde Aurora-Lichter, ein bewegtes Perspektiv-Gitter und fallende Sakura-Blüten
+- **Statusleiste** (PC) mit Verbindungsstatus, Sprache, Cursor-Position und Uhrzeit
 - Effekte, Blüten und Code-chan lassen sich einzeln abschalten. Ist im System „Bewegung reduzieren“ an,
   bleiben die Animationen automatisch aus.
 
