@@ -140,7 +140,8 @@ function loadPython(onStatus) {
     pyodidePromise = (async () => {
       await loadScript(PYODIDE_CDN + 'pyodide.js');
       await loadScript(PYODIDE_CDN + 'pyodide.asm.js');
-      return window.loadPyodide({ indexURL: PYODIDE_URL });
+      // Die Standardbibliothek liegt als .wasm-Datei bereit (ZIP-Dateien werden dort nicht ausgeliefert)
+      return window.loadPyodide({ indexURL: PYODIDE_URL, stdLibURL: PYODIDE_URL + 'python_stdlib.wasm' });
     })().catch((e) => { pyodidePromise = null; throw e; });
   }
   return pyodidePromise;

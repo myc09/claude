@@ -33,7 +33,7 @@ for (const f of fs.readdirSync(path.join(root, 'public', 'icons'))) {
   fs.copyFileSync(path.join(root, 'public', 'icons', f), path.join(out, 'icons', f));
 }
 const pyo = path.join(root, 'node_modules', 'pyodide');
-for (const f of ['pyodide.asm.wasm', 'python_stdlib.zip', 'pyodide-lock.json']) {
-  fs.copyFileSync(path.join(pyo, f), path.join(out, 'pyodide', f));
+for (const [from, to] of [['pyodide.asm.wasm'], ['python_stdlib.zip', 'python_stdlib.wasm'], ['pyodide-lock.json']]) {
+  fs.copyFileSync(path.join(pyo, from), path.join(out, 'pyodide', to || from));
 }
 console.log('Demo gebaut in', out);
