@@ -13,6 +13,11 @@ deinem Server, deshalb siehst und bearbeitest du überall denselben Stand, egal 
 - **Level-System:** XP für Tippen, erfolgreiche Programme und besiegte Bugs, mit Level-up-Animation
 - **Glas-Design:** schwebende Glas-Panels mit Unschärfe und Lichtkanten, HUD-Ecken, holografischer Ausführen-Knopf
 - **Futuristischer Hintergrund:** wandernde Aurora-Lichter, ein bewegtes Perspektiv-Gitter und fallende Sakura-Blüten
+- **Befehlspalette** (Strg+K oder Klick auf den Dateinamen oben): Dateien und Befehle per Suche finden
+- **Glas-Dialoge** für neue Dateien (mit Vorlagen für Python, C und C++), Umbenennen und Löschen
+- **Regenbogen-Einrückung**: jede Einrückungsebene hat ihre eigene Farbe
+- **Erfolge** zum Freischalten (erster Lauf, Bug-Jäger, Combo-Meister, Nachteule …) und ein Start-Dashboard mit Statistik
+- **Boot-Animation** beim Start
 - **Statusleiste** (PC) mit Verbindungsstatus, Sprache, Cursor-Position und Uhrzeit
 - Effekte, Blüten und Code-chan lassen sich einzeln abschalten. Ist im System „Bewegung reduzieren“ an,
   bleiben die Animationen automatisch aus.
@@ -107,6 +112,12 @@ Danach startet CodePad wie eine normale App im Vollbild.
 CodePad führt beliebigen Code auf dem Server aus. Teile das Passwort also nur mit Leuten, denen du vertraust,
 und betreibe CodePad am besten in Docker. Der Container läuft ohne Root-Rechte.
 
+## Online-Demo
+
+`npm run build:demo` baut im Ordner `demo/` eine Version, die ganz ohne Server im Browser läuft:
+Dateien bleiben im Browser gespeichert und Python läuft über Pyodide (WebAssembly).
+C/C++ und die Synchronisierung zwischen Geräten brauchen den echten Server.
+
 ## Aufbau
 
 - `server.js`: Express-Server, Datei-API, Anmeldung und Code-Ausführung über WebSocket
@@ -114,4 +125,7 @@ und betreibe CodePad am besten in Docker. Der Container läuft ohne Root-Rechte.
 - `src/theme.js`: Editor-Farben (über CSS-Variablen, daher pro Theme austauschbar)
 - `src/mascot.js`: Code-chan (SVG) mit Stimmungen und Sprüchen
 - `src/effects.js`: Sakura-Blüten, Funken, Combo, Konfetti, XP und Level
+- `src/ui.js`: Glas-Dialoge, Befehlspalette, Erfolge, Boot-Bildschirm
+- `src/indent.js`: Regenbogen-Einrückung
+- `src/demo-backend.js`, `src/demo.js`, `scripts/make-demo.js`: Online-Demo ohne Server
 - `public/`: HTML, CSS, Manifest, Service Worker und Icons

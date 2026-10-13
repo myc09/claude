@@ -11,6 +11,8 @@ import { cpp } from '@codemirror/lang-cpp';
 import { animeTheme } from './theme.js';
 import { Mascot } from './mascot.js';
 import { Sakura, fx, Combo, Progress, levelBanner } from './effects.js';
+import { confirmDialog, inputDialog, openPalette, Achievements, ACHIEVEMENTS, bootDone } from './ui.js';
+import { rainbowIndent } from './indent.js';
 
 const $ = (id) => document.getElementById(id);
 const clientId = Math.random().toString(36).slice(2);
@@ -62,6 +64,7 @@ function toast(text, isError = false) {
 // ---------------- Login ----------------
 
 function showLogin() {
+  bootDone();
   $('login-mascot').appendChild(mascot.el);
   mascot.set('happy', '', 0);
   $('app').classList.add('hidden');
@@ -114,6 +117,7 @@ function createState(path, content) {
     extensions: [
       basicSetup,
       animeTheme,
+      rainbowIndent,
       indentUnit.of('    '),
       EditorState.tabSize.of(4),
       langConf.of(languageFor(path)),
@@ -146,6 +150,7 @@ const settings = {
   mascot: store.get('mascot', true),
 };
 const sakura = new Sakura();
+const achievements = new Achievements(store, () => { fx.confetti(); renderWelcome(); });
 const mascot = new Mascot($('mascot-home'));
 let combo = null;
 let progress = null;
@@ -158,7 +163,8 @@ function applySettings() {
   fx.enabled = settings.fx && anime;
   sakura.setEnabled(settings.petals && anime);
   document.body.classList.toggle('no-mascot', !settings.mascot);
-  document.querySelector('meta[name="theme-color"]').content =
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.content =
     { sakura: '#1b1033', neon: '#070b1c', matcha: '#0f1d18', classic: '#333333' }[settings.theme];
   document.querySelectorAll('[data-theme-pick]').forEach((b) => b.classList.toggle('on', b.dataset.themePick === settings.theme));
 }
@@ -204,7 +210,13 @@ function tickClock() {
 tickClock();
 setInterval(tickClock, 15000);
 
+function checkNight() {
+  const h = new Date().getHours();
+  if (h >= 23 || h < 4) achievements.unlock('night');
+}
+
 function onLevelUp(level) {
+  if (level >= 5) achievements.unlock('level5');
   levelBanner(level);
   fx.confetti();
   if (settings.petals) sakura.storm();
@@ -252,6 +264,9 @@ function activate(path, focus = true) {
     if (focus && !isMobile()) view.focus();
   }
   $('welcome').classList.toggle('hidden', !!tab);
+  $('editor').style.visibility = tab ? '' : 'hidden';
+  if (tab) store.set('recent', [path, ...store.get('recent', []).filter((p) => p !== path)].slice(0, 10));
+  else renderWelcome();
   renderTabs();
   renderTree();
   updateTitle();
@@ -321,9 +336,13 @@ async function saveTab(tab, { force = false } = {}) {
 }
 
 async function resolveConflict(tab, remote) {
-  const keepMine = confirm(
-    `"${tab.path}" wurde auf einem anderen Gerät geändert.\n\n` +
-    `OK = deine Version behalten (andere überschreiben)\nAbbrechen = die andere Version laden`);
+  const keepMine = await confirmDialog({
+    icon: '⇄',
+    title: 'Auf einem anderen Gerät geändert',
+    text: `"${tab.path}" wurde inzwischen woanders bearbeitet. Welche Version soll bleiben?`,
+    ok: 'Meine behalten',
+    cancel: 'Andere laden',
+  });
   if (keepMine) {
     tab.mtime = remote.mtime;
     tab.saving = false;
@@ -502,12 +521,26 @@ async function moveTo(from, dir) {
   await renamePath(from, to);
 }
 
-async function createEntry(type, dir = '') {
-  const name = prompt(type === 'dir' ? 'Name des neuen Ordners:' : 'Name der neuen Datei (z. B. main.py oder main.c):');
-  if (!name || !name.trim()) return;
-  const path = joinPath(dir, name.trim());
+const TEMPLATES = [
+  { label: 'Python', badge: 'py', ext: '.py', color: 'var(--accent-3)', content: '# Mein Python-Programm\n\nprint("Hallo Welt!")\n' },
+  { label: 'C', badge: 'C', ext: '.c', color: 'var(--accent-2)', content: '#include <stdio.h>\n\nint main(void) {\n    printf("Hallo Welt!\\n");\n    return 0;\n}\n' },
+  { label: 'C++', badge: '++', ext: '.cpp', color: 'var(--accent)', content: '#include <iostream>\n\nint main() {\n    std::cout << "Hallo Welt!" << std::endl;\n    return 0;\n}\n' },
+  { label: 'Leer', badge: '·', ext: null, color: 'var(--accent-5)', content: '' },
+];
+
+async function createEntry(type, dir = '', preset = null) {
+  const templates = type === 'file' ? (preset ? [preset, ...TEMPLATES.filter((t) => t !== preset)] : TEMPLATES) : null;
+  const res = await inputDialog(type === 'dir'
+    ? { title: 'Neuer Ordner', label: 'Name', placeholder: 'projekte', ok: 'Anlegen', icon: '⌂' }
+    : { title: 'Neue Datei', label: 'Dateiname', placeholder: 'main.py', ok: 'Anlegen', templates, icon: '✦' });
+  if (!res) return;
+  const path = joinPath(dir, res.value);
   try {
     await api('POST', '/create', { path, type });
+    if (type === 'file' && res.template?.content && (!res.template.ext || path.endsWith(res.template.ext))) {
+      await api('PUT', '/file', { path, content: res.template.content, clientId });
+    }
+    if (type === 'file') achievements.unlock('creator');
     if (dir) expanded.add(dir);
     if (type === 'dir') expanded.add(path);
     store.set('expanded', [...expanded]);
@@ -556,12 +589,13 @@ function nodeMenu(node, e) {
   const items = [
     ['Neue Datei', () => createEntry('file', dir)],
     ['Neuer Ordner', () => createEntry('dir', dir)],
-    ['Umbenennen', () => {
-      const name = prompt('Neuer Name:', node.name);
-      if (name && name.trim() && name !== node.name) renamePath(node.path, joinPath(parentOf(node.path), name.trim()));
+    ['Umbenennen', async () => {
+      const res = await inputDialog({ title: 'Umbenennen', label: 'Neuer Name', value: node.name, ok: 'Umbenennen', icon: '✎' });
+      if (res && res.value !== node.name) renamePath(node.path, joinPath(parentOf(node.path), res.value));
     }],
     ['Löschen', async () => {
-      if (!confirm(`"${node.path}" wirklich löschen?`)) return;
+      const yes = await confirmDialog({ icon: '🗑', title: 'Wirklich löschen?', text: `"${node.path}" wird endgültig gelöscht.`, ok: 'Löschen', danger: true });
+      if (!yes) return;
       try {
         await api('DELETE', '/file?path=' + encodeURIComponent(node.path));
         applyDelete(node.path);
@@ -675,6 +709,7 @@ function setupKeys() {
 let ws = null;
 let wsRetry = 0;
 let running = false;
+let runningPath = null;
 const out = $('output');
 
 function append(text, cls) {
@@ -801,6 +836,8 @@ async function runActive() {
   $('stdin-form').classList.add('active');
   togglePanel(true);
   ws.send(JSON.stringify({ type: 'run', path: tab.path }));
+  $('panel').classList.add('running');
+  runningPath = tab.path;
   fx.burst($('btn-stop'));
   mascot.say('run');
   // Auf dem Handy direkt das Eingabefeld fokussieren, wenn das Programm input()/scanf nutzt
@@ -813,11 +850,19 @@ function finishRun(text, ok = false) {
   if (out.textContent && !out.textContent.endsWith('\n')) append('\n');
   append(`\n[${text}]\n`, ok ? 'ok' : 'info');
   linkifyErrors();
+  $('panel').classList.remove('running');
   if (ok) {
     mascot.say('ok');
     fx.confetti();
     progress.add(lastRunFailed ? 25 : 15);
-    if (lastRunFailed) toast('Bug besiegt! +25 XP ⚔️');
+    if (lastRunFailed) { toast('Bug besiegt! +25 XP ⚔️'); achievements.unlock('bugfix'); }
+    const runs = achievements.bump('runs');
+    achievements.unlock('firstRun');
+    if (/\.py$/i.test(runningPath || '')) achievements.unlock('firstPy');
+    if (/\.(c|cpp|cc)$/i.test(runningPath || '')) achievements.unlock('firstC');
+    if (runs >= 10) achievements.unlock('runs10');
+    if (runs >= 50) achievements.unlock('runs50');
+    checkNight();
   } else if (!/gestoppt/.test(text)) {
     mascot.say('error');
     fx.shake();
@@ -844,9 +889,83 @@ function sendEof() {
   if (running && ws) { ws.send('{"type":"eof"}'); append('^D\n', 'stdin-echo'); }
 }
 
+// ---------------- Befehlspalette ----------------
+
+function allFiles() {
+  const out = [];
+  const walk = (n) => n.forEach((x) => (x.type === 'dir' ? walk(x.children) : out.push(x.path)));
+  walk(tree);
+  return out;
+}
+
+const KIND_COLOR = { py: 'var(--accent-3)', c: 'var(--accent-2)', cpp: 'var(--accent)', h: 'var(--accent-4)', other: 'var(--accent-5)' };
+
+function paletteItems() {
+  const files = allFiles().map((p) => ({
+    group: 'Dateien', icon: iconText(p.split('/').pop()), label: p.split('/').pop(), hint: p.includes('/') ? parentOf(p) : '',
+    color: KIND_COLOR[kindOf(p)], run: () => openFile(p),
+  }));
+  const theme = (id, name) => ({ group: 'Aussehen', icon: '◐', label: `Theme: ${name}`, color: 'var(--accent-4)', run: () => { settings.theme = id; store.set('theme', id); applySettings(); } });
+  const cmds = [
+    { group: 'Befehle', icon: '▶', label: 'Ausführen', hint: 'Strg+Enter', color: 'var(--ok)', run: runActive },
+    { group: 'Befehle', icon: '✦', label: 'Neue Datei …', color: 'var(--accent-5)', run: () => createEntry('file') },
+    { group: 'Befehle', icon: '⌂', label: 'Neuer Ordner …', color: 'var(--accent-5)', run: () => createEntry('dir') },
+    { group: 'Befehle', icon: '⌕', label: 'Im Code suchen', hint: 'Strg+F', color: 'var(--accent-2)', run: () => activeTab() && openSearchPanel(view) },
+    { group: 'Befehle', icon: '☰', label: 'Explorer ein/aus', hint: 'Strg+B', color: 'var(--accent-2)', run: toggleSidebar },
+    { group: 'Befehle', icon: '▭', label: 'Terminal ein/aus', hint: 'Strg+J', color: 'var(--accent-2)', run: () => togglePanel() },
+    { group: 'Befehle', icon: '🏆', label: 'Meine Erfolge', hint: `${achievements.count()}/${Object.keys(ACHIEVEMENTS).length}`, color: 'var(--accent-3)', run: showAchievements },
+    theme('sakura', 'Sakura Night 桜'), theme('neon', 'Neon Tokyo 夜'), theme('matcha', 'Matcha 茶'), theme('classic', 'Klassisch'),
+    { group: 'Aussehen', icon: '✦', label: 'Effekte an/aus', color: 'var(--accent-4)', run: () => toggleSetting('fx') },
+    { group: 'Aussehen', icon: '✿', label: 'Sakura-Blüten an/aus', color: 'var(--accent-4)', run: () => toggleSetting('petals') },
+    { group: 'Aussehen', icon: '♡', label: 'Code-chan an/aus', color: 'var(--accent-4)', run: () => toggleSetting('mascot') },
+  ];
+  return [...files, ...cmds];
+}
+
+function toggleSetting(key) {
+  settings[key] = !settings[key];
+  store.set(key, settings[key]);
+  applySettings();
+  toast(`${{ fx: 'Effekte', petals: 'Sakura-Blüten', mascot: 'Code-chan' }[key]} ${settings[key] ? 'an ✨' : 'aus'}`);
+}
+
+function showAchievements() {
+  openPalette(() => Object.entries(ACHIEVEMENTS).map(([id, a]) => {
+    const got = achievements.got.has(id);
+    return { group: 'Erfolge', icon: got ? a.icon : '🔒', label: got ? a.title : '???', hint: a.desc, color: got ? 'var(--accent-3)' : 'var(--text-dim)', run: () => {} };
+  }), 'Erfolge durchsuchen …');
+}
+
+// ---------------- Willkommens-Dashboard ----------------
+
+function renderWelcome() {
+  const el = $('welcome-dash');
+  if (!el || !progress) return;
+  const recent = store.get('recent', []).filter((p) => allFiles().includes(p)).slice(0, 5);
+  const lv = Progress.levelFor(progress.xp);
+  el.innerHTML = `
+    <div class="dash-actions">
+      <button class="dash-card" data-new="0" style="--tc:var(--accent-3)"><b>py</b><span>Neue Python-Datei</span></button>
+      <button class="dash-card" data-new="1" style="--tc:var(--accent-2)"><b>C</b><span>Neue C-Datei</span></button>
+      <button class="dash-card" data-pal style="--tc:var(--accent-4)"><b>⌘K</b><span>Befehle &amp; Dateien</span></button>
+    </div>
+    <div class="dash-stats">
+      <div><b>Lv.${lv}</b><span>Level</span></div>
+      <div><b>${progress.xp}</b><span>XP</span></div>
+      <div><b>${achievements.stats.runs || 0}</b><span>Läufe</span></div>
+      <div><b>${achievements.count()}/${Object.keys(ACHIEVEMENTS).length}</b><span>Erfolge</span></div>
+    </div>
+    ${recent.length ? `<div class="dash-recent"><div class="dash-label">ZULETZT GEÖFFNET</div>${recent.map((p) =>
+      `<button class="dash-file" data-open="${p.replace(/"/g, '&quot;')}" style="--tc:${KIND_COLOR[kindOf(p)]}"><span class="ficon">${iconText(p.split('/').pop())}</span>${p.replace(/</g, '&lt;')}</button>`).join('')}</div>` : ''}`;
+  el.querySelectorAll('[data-new]').forEach((b) => (b.onclick = () => createEntry('file', '', TEMPLATES[Number(b.dataset.new)])));
+  el.querySelector('[data-pal]').onclick = () => openPalette(paletteItems);
+  el.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => openFile(b.dataset.open)));
+}
+
 // ---------------- Bedienelemente ----------------
 
 $('btn-menu').addEventListener('click', toggleSidebar);
+$('command-center').addEventListener('click', () => openPalette(paletteItems));
 $('backdrop').addEventListener('click', closeSidebar);
 $('btn-run').addEventListener('click', runActive);
 $('btn-stop').addEventListener('click', () => ws && ws.send('{"type":"stop"}'));
@@ -873,10 +992,9 @@ $('more-menu').addEventListener('click', async (e) => {
   if (!action) return;
   closeMenus();
   if (['fx', 'petals', 'mascot'].includes(action)) {
-    settings[action] = !settings[action];
-    store.set(action, settings[action]);
-    applySettings();
-    toast(`${{ fx: 'Effekte', petals: 'Sakura-Blüten', mascot: 'Code-chan' }[action]} ${settings[action] ? 'an ✨' : 'aus'}`);
+    toggleSetting(action);
+  } else if (action === 'achievements') {
+    showAchievements();
   } else if (action === 'font-up' || action === 'font-down') {
     fontSize = Math.max(9, Math.min(28, fontSize + (action === 'font-up' ? 1 : -1)));
     store.set('fontSize', fontSize);
@@ -905,7 +1023,8 @@ $('more-menu').addEventListener('click', async (e) => {
 
 document.addEventListener('keydown', (e) => {
   const mod = e.ctrlKey || e.metaKey;
-  if (mod && e.key.toLowerCase() === 'b') { e.preventDefault(); toggleSidebar(); }
+  if (mod && (e.key.toLowerCase() === 'k' || e.key.toLowerCase() === 'p')) { e.preventDefault(); if (started) openPalette(paletteItems); }
+  else if (mod && e.key.toLowerCase() === 'b') { e.preventDefault(); toggleSidebar(); }
   else if (mod && e.key.toLowerCase() === 'j') { e.preventDefault(); togglePanel(); }
   else if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); saveActive(); }
   else if ((mod && e.key === 'Enter') || e.key === 'F5') { e.preventDefault(); runActive(); }
@@ -931,7 +1050,12 @@ async function start() {
   started = true;
   $('app').classList.remove('hidden');
   $('mascot-home').appendChild(mascot.el);
-  combo = new Combo($('editor-wrap'), (n) => { mascot.say('combo'); progress.add(Math.round(n / 5)); });
+  combo = new Combo($('editor-wrap'), (n) => {
+    mascot.say('combo');
+    progress.add(Math.round(n / 5));
+    if (n >= 50) achievements.unlock('combo50');
+    if (n >= 100) achievements.unlock('combo100');
+  });
   progress = new Progress(store, onLevelUp);
   setupResizers();
   setupKeys();
@@ -947,7 +1071,10 @@ async function start() {
   }
   if (isMobile()) closeSidebar();
   updateTitle();
-  setTimeout(() => mascot.say('greet'), 600);
+  renderWelcome();
+  checkNight();
+  bootDone();
+  setTimeout(() => mascot.say('greet'), 1100);
 }
 
 applySettings();
@@ -957,4 +1084,4 @@ applySettings();
   if (me.authed) start(); else showLogin();
 })();
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator && !window.__CODEPAD_DEMO__) navigator.serviceWorker.register('sw.js').catch(() => {});

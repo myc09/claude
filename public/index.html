@@ -18,6 +18,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Boot-Bildschirm -->
+  <div id="boot" class="boot" aria-hidden="true">
+    <div class="boot-ring"><div class="boot-core">✿</div></div>
+    <div class="boot-logo logo">CodePad</div>
+    <div class="boot-bar"><span></span></div>
+    <div class="boot-text">SYSTEM START · 起動中</div>
+  </div>
+  <script>window.__bootStart = performance.now();</script>
   <!-- Futuristischer Hintergrund: Aurora-Kugeln + Perspektiv-Gitter -->
   <div class="bg-fx" aria-hidden="true">
     <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div><div class="orb orb-4"></div>
@@ -44,10 +52,12 @@
         <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
       <div class="brand" aria-hidden="true">✿</div>
-      <div class="title">
+      <button id="command-center" class="title" title="Dateien &amp; Befehle (Strg+K)">
+        <span class="cc-glyph">⌕</span>
         <span id="title-file">CodePad</span>
         <span id="save-state" class="save-state"></span>
-      </div>
+        <kbd class="cc-kbd">Strg K</kbd>
+      </button>
       <div id="xp" class="xp"><span class="xp-lv">Lv.1</span><span class="xp-bar"><span class="xp-fill"></span></span></div>
       <button id="btn-search" class="icon-btn" title="Suchen (Strg+F)" aria-label="Suchen">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
@@ -70,6 +80,7 @@
           <button data-theme-pick="matcha" class="swatch sw-matcha" title="Matcha">茶</button>
           <button data-theme-pick="classic" class="swatch sw-classic" title="Klassisch">VS</button>
         </div>
+        <button data-action="achievements">🏆 Meine Erfolge</button>
         <button data-action="fx">✦ Effekte an/aus</button>
         <button data-action="petals">✿ Sakura-Blüten an/aus</button>
         <button data-action="mascot">♡ Code-chan an/aus</button>
@@ -112,8 +123,8 @@
           <div id="welcome" class="welcome">
             <h2 class="logo">Code<span>Pad</span></h2>
             <div class="logo-jp">コードを書こう！</div>
-            <p>Öffne eine Datei im Explorer oder lege eine neue an~</p>
-            <p class="hint">Strg+Enter ausführen · Strg+S speichern · Strg+B Explorer · Strg+J Terminal</p>
+            <div id="welcome-dash" class="dash"></div>
+            <p class="hint">Strg+K Befehle · Strg+Enter ausführen · Strg+B Explorer · Strg+J Terminal</p>
           </div>
         </div>
         <div id="keys" class="keys"></div>

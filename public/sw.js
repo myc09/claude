@@ -1,5 +1,5 @@
 // Service Worker: macht CodePad installierbar und lädt die Oberfläche auch bei schlechter Verbindung.
-const CACHE = 'codepad-v4';
+const CACHE = 'codepad-v5';
 const SHELL = ['./', 'index.html', 'style.css', 'dist/app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
