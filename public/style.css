@@ -792,3 +792,53 @@ body.pro .tab.active { box-shadow: inset 0 2px 0 var(--tc); }
 /* Koralle behält im sachlichen Modus seinen eigenen Knopf und sein Logo */
 [data-theme="koralle"] body.pro { --run-grad: linear-gradient(135deg, #ff8f63, #ff6a7d); --holo: linear-gradient(90deg, #ff7a5c, #ffc561); }
 [data-theme="koralle"] body.pro .logo { background: linear-gradient(90deg, var(--text) 35%, var(--accent) 75%, var(--accent-3)); -webkit-background-clip: text; background-clip: text; }
+
+/* ================= Koralle: lebendige Signatur =================
+   Die Sprache der offenen Datei färbt das ganze Fenster; Farbwechsel gleiten weich. */
+@property --tc { syntax: '<color>'; inherits: true; initial-value: #ff7a5c; }
+body { --tc: var(--accent); transition: --tc .7s ease; }
+body[data-kind="py"] { --tc: var(--accent-3); }
+body[data-kind="c"] { --tc: var(--accent-2); }
+body[data-kind="cpp"] { --tc: var(--accent); }
+body[data-kind="h"] { --tc: var(--accent-4); }
+body[data-kind="other"] { --tc: var(--accent-5); }
+
+[data-theme="koralle"] body { --orb-1: var(--tc); --orb-op: .38; }
+[data-theme="koralle"] .orb-3 { display: block; opacity: .18; }
+[data-theme="koralle"] .orb-1 { opacity: .42; }
+[data-theme="koralle"] body { background: radial-gradient(ellipse at 15% -10%, color-mix(in srgb, var(--tc) 24%, #0d0f15), transparent 60%), radial-gradient(ellipse at 85% 30%, color-mix(in srgb, var(--accent-4) 10%, transparent), transparent 50%), radial-gradient(ellipse at 110% 110%, #121b33, transparent 55%), var(--bg-1); }
+[data-theme="koralle"] .glass { --glass: rgba(20, 23, 31, .74); }
+
+/* Editor-Karte: farbiger Rand, Glühen und Lichtkante oben */
+[data-theme="koralle"] .editor-card { box-shadow: 0 16px 44px var(--shadow), 0 0 0 1px color-mix(in srgb, var(--tc) 22%, transparent), 0 0 60px -18px color-mix(in srgb, var(--tc) 55%, transparent), inset 0 1px 0 rgba(255,255,255,.06); transition: box-shadow .7s; }
+[data-theme="koralle"] .editor-card.hud::after { display: block; content: ''; position: absolute; inset: 0 12% auto; height: 1px; border-radius: 0; opacity: 1; filter: none;
+  background: linear-gradient(90deg, transparent, var(--tc), transparent); box-shadow: 0 0 14px 1px var(--tc); }
+[data-theme="koralle"] .topbar::after { background: linear-gradient(90deg, transparent, var(--tc), transparent); opacity: .7; }
+
+/* Ausführen: ein Lichtstreifen läuft um Editor und Terminal */
+[data-theme="koralle"] body.is-running .editor-card::before,
+[data-theme="koralle"] body.is-running .panel::before {
+  background: conic-gradient(from var(--spin), transparent 0 62%, var(--tc) 80%, #fff 84%, transparent 92%); opacity: 1; animation: edgespin 1.3s linear infinite; padding: 1.5px; }
+[data-theme="koralle"] .panel.flash-ok { animation: flashOk 1.4s ease-out; }
+[data-theme="koralle"] .panel.flash-err { animation: flashErr 1.4s ease-out; }
+@keyframes flashOk { 0% { box-shadow: 0 0 0 1.5px var(--ok), 0 0 40px -4px var(--ok); } 100% { box-shadow: 0 12px 36px var(--shadow); } }
+@keyframes flashErr { 0% { box-shadow: 0 0 0 1.5px var(--danger), 0 0 40px -4px var(--danger); } 100% { box-shadow: 0 12px 36px var(--shadow); } }
+
+/* Mehr Farbe in den Details */
+[data-theme="koralle"] .node .ficon:not(svg) { min-width: 24px; height: 18px; padding: 0 4px; border-radius: 5px; line-height: 18px; color: var(--tc); background: color-mix(in srgb, var(--tc) 16%, transparent); }
+[data-theme="koralle"] .tab .ficon { color: var(--tc); }
+[data-theme="koralle"] .tab.active { background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 22%, transparent), rgba(255,255,255,.02)); box-shadow: inset 0 2px 0 var(--tc), 0 -6px 20px -6px color-mix(in srgb, var(--tc) 50%, transparent); }
+[data-theme="koralle"] .node.active { background: linear-gradient(90deg, color-mix(in srgb, var(--tc) 20%, transparent), transparent 85%); box-shadow: inset 2px 0 0 var(--tc); }
+[data-theme="koralle"] #sb-lang:not(:empty) { color: #12141b; background: var(--tc); box-shadow: 0 0 14px -2px var(--tc); font-weight: 700; }
+[data-theme="koralle"] .sb-conn.on { color: var(--ok); }
+[data-theme="koralle"] .statusbar { box-shadow: 0 0 0 1px rgba(255,255,255,.04), inset 0 1px 0 color-mix(in srgb, var(--tc) 35%, transparent); }
+[data-theme="koralle"] .editor-wrap .cm-activeLineGutter { text-shadow: 0 0 10px var(--tc); }
+[data-theme="koralle"] .editor-wrap .cm-activeLine { background: linear-gradient(90deg, color-mix(in srgb, var(--tc) 9%, transparent), rgba(255,255,255,.02) 60%); }
+[data-theme="koralle"] .panel-title { color: var(--tc); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tc) 35%, transparent); background: color-mix(in srgb, var(--tc) 10%, transparent); }
+[data-theme="koralle"] .stdin.active { border-color: var(--tc); box-shadow: 0 0 14px -4px var(--tc); }
+[data-theme="koralle"] .stdin .prompt { color: var(--tc); }
+[data-theme="koralle"] .run-btn { background-size: 180% 180%; }
+@media (hover: hover) { [data-theme="koralle"] .run-btn:hover { animation: holo 2.5s ease infinite; } }
+[data-theme="koralle"] .title { box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); }
+[data-theme="koralle"] .cc-glyph { color: var(--tc); }
+@media (prefers-reduced-motion: reduce) { body { transition: none; } }

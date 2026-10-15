@@ -204,6 +204,7 @@ function updateStatus(state = view.state) {
   $('sb-lang').textContent = '⟨/⟩ ' + (LANG_NAMES[ext] || ext.toUpperCase());
   $('sb-lang').dataset.kind = kindOf(tab.path);
   $('editor-wrap').dataset.kind = kindOf(tab.path);
+  document.body.dataset.kind = kindOf(tab.path);
 }
 
 function setConn(online) {
@@ -846,6 +847,7 @@ async function runActive() {
   togglePanel(true);
   ws.send(JSON.stringify({ type: 'run', path: tab.path }));
   $('panel').classList.add('running');
+  document.body.classList.add('is-running');
   runningPath = tab.path;
   fx.burst($('btn-stop'));
   mascot.say('run');
@@ -860,6 +862,15 @@ function finishRun(text, ok = false) {
   append(`\n[${text}]\n`, ok ? 'ok' : 'info');
   linkifyErrors();
   $('panel').classList.remove('running');
+  document.body.classList.remove('is-running');
+  // Kurzes Aufleuchten des Terminals: grün bei Erfolg, rot bei Fehler
+  const flash = ok ? 'flash-ok' : /gestoppt/.test(text) ? null : 'flash-err';
+  if (flash) {
+    $('panel').classList.remove('flash-ok', 'flash-err');
+    void $('panel').offsetWidth;
+    $('panel').classList.add(flash);
+    setTimeout(() => $('panel').classList.remove(flash), 1400);
+  }
   if (ok) {
     mascot.say('ok');
     fx.confetti();
