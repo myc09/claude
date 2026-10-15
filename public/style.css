@@ -358,7 +358,7 @@ body.no-mascot .output { padding-right: 18px; }
 
 /* Hintergrund */
 .bg-fx { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-.orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; will-change: transform; mix-blend-mode: screen; }
+.orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: var(--orb-op, .55); will-change: transform; mix-blend-mode: screen; }
 .orb-1 { width: 46vmax; height: 46vmax; left: -12vmax; top: -14vmax; background: radial-gradient(circle, var(--orb-1), transparent 65%); animation: float1 22s ease-in-out infinite alternate; }
 .orb-2 { width: 52vmax; height: 52vmax; right: -16vmax; top: 10vh; background: radial-gradient(circle, var(--orb-2), transparent 65%); animation: float2 28s ease-in-out infinite alternate; }
 .orb-3 { width: 38vmax; height: 38vmax; left: 20vw; bottom: -18vmax; background: radial-gradient(circle, var(--orb-3), transparent 65%); animation: float3 25s ease-in-out infinite alternate; opacity: .4; }
@@ -718,3 +718,77 @@ body.pro .welcome h2 { font-size: 40px; }
 body.pro .cm-indent-0, body.pro .cm-indent-1, body.pro .cm-indent-2, body.pro .cm-indent-3, body.pro .cm-indent-4 { background-color: transparent; border-radius: 0; }
 body.pro .cm-indent { box-shadow: inset 1px 0 0 rgba(255,255,255,.1); }
 body.pro .tab.active { box-shadow: inset 0 2px 0 var(--tc); }
+
+/* ================= Theme „Koralle“ (Standard) =================
+   Ruhige Graphit-Oberfläche, die nur über Helligkeitsstufen gestaffelt ist;
+   Farbe steckt im Code, in der Sprache der Datei und im Ausführen-Knopf. */
+[data-theme="koralle"] {
+  --bg-1: #0d0f15; --bg-2: #1a1520; --bg-3: #0c1820;
+  --surface: rgba(20, 23, 31, .9); --surface-2: rgba(22, 25, 34, .9); --panel: #171a23; --bar: rgba(19, 22, 30, .92);
+  --input: rgba(255, 255, 255, .045);
+  --border: rgba(255, 255, 255, .08);
+  --text: #e8eaf0; --text-dim: #8b91a5; --ed-text: #e6e8ef;
+  --accent: #ff7a5c; --accent-2: #6cc4ff; --accent-3: #ffc561; --accent-4: #a99cff; --accent-5: #62dcb0;
+  --accent-soft: rgba(255, 122, 92, .26); --on-accent: #1a0c08;
+  --chip: rgba(255, 255, 255, .06);
+  --danger: #ff6b81; --ok: #62dcb0; --warn: #ffc561;
+  --caret: #ff7a5c; --selection: rgba(108, 196, 255, .2); --selection-match: rgba(169, 156, 255, .18);
+  --active-line: rgba(255, 255, 255, .035); --gutter: #4a5065; --bracket: rgba(255, 197, 97, .18); --search: rgba(255, 197, 97, .28);
+  --syn-keyword: #ff8a70; --syn-func: #6cc4ff; --syn-def: #ffd7b8; --syn-type: #b3a8ff; --syn-string: #7fdcb2;
+  --syn-number: #ffc561; --syn-comment: #636a82; --syn-meta: #ff9ec4; --syn-op: #93a3c8; --syn-prop: #9fd3ff; --syn-punct: #8990a8;
+  --shadow: rgba(0, 0, 0, .45);
+  --petal: #ffb3a1; --petals: #ffb3a1, #ffd8a8, #b3d9ff, #c9c0ff;
+  --glow: 0 4px 18px rgba(255, 122, 92, .35);
+  --run-grad: linear-gradient(135deg, #ff8f63, #ff6a7d);
+  --h1: #ff7a5c; --h2: #ffc561; --h3: #62dcb0; --h4: #6cc4ff; --h5: #a99cff;
+  --orb-1: #ff7a5c; --orb-2: #6b5cff; --orb-3: #2aa7d6; --orb-4: #ffc561; --orb-op: .16;
+  --glass: rgba(20, 23, 31, .84); --glass-strong: rgba(23, 26, 35, .96);
+  --glass-edge: rgba(255, 255, 255, .12); --grid: transparent;
+  --hair-1: #ffb3a1; --hair-2: #ff7a5c; --ear-in: #ffe0d6; --eye-1: #8fd0ff; --eye-2: #2f5bd1; --outfit: #20253a; --outfit-line: #ff7a5c; --clip: #ffc561;
+}
+[data-theme="koralle"] body { background: radial-gradient(ellipse at 15% -10%, #22182a, transparent 55%), radial-gradient(ellipse at 110% 110%, #0f1d28, transparent 55%), var(--bg-1); }
+[data-theme="koralle"] .grid-floor, [data-theme="koralle"] .noise { display: none; }
+[data-theme="koralle"] .orb-3, [data-theme="koralle"] .orb-4 { display: none; }
+[data-theme="koralle"] .glass { backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 40%), var(--glass);
+  box-shadow: 0 12px 36px var(--shadow), inset 0 1px 0 rgba(255,255,255,.06); }
+[data-theme="koralle"] .glass::before { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04) 30%, rgba(255,255,255,.04)); opacity: 1; animation: none; }
+[data-theme="koralle"] .hud::after { display: none; }
+[data-theme="koralle"] .topbar::after { background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-3) 50%, var(--accent-2) 70%, transparent); opacity: .35; }
+[data-theme="koralle"] .logo { background: linear-gradient(90deg, var(--text) 30%, var(--accent)); -webkit-background-clip: text; background-clip: text; }
+[data-theme="koralle"] .mark { color: var(--accent); }
+[data-theme="koralle"] .mark path { stroke: var(--accent-3); }
+[data-theme="koralle"] .run-btn { background: var(--run-grad); color: #fff; box-shadow: var(--glow), inset 0 1px 0 rgba(255,255,255,.35); animation: none; }
+[data-theme="koralle"] .run-btn:hover { box-shadow: 0 6px 24px rgba(255, 122, 92, .5), inset 0 1px 0 rgba(255,255,255,.35); }
+[data-theme="koralle"] .btn.primary, [data-theme="koralle"] .login-box button { background: var(--run-grad); animation: none; }
+[data-theme="koralle"] .tab { background: transparent; }
+[data-theme="koralle"] .tab.active { background: rgba(255,255,255,.05); box-shadow: inset 0 2px 0 var(--tc); }
+[data-theme="koralle"] .node.active { background: rgba(255,255,255,.055); box-shadow: inset 2px 0 0 var(--tc); }
+[data-theme="koralle"] .node:hover { background: rgba(255,255,255,.04); transform: none; }
+[data-theme="koralle"] .output-wrap::after { opacity: .25; }
+[data-theme="koralle"] .menu button:hover { background: rgba(255,255,255,.06); color: var(--text); }
+[data-theme="koralle"] .title:hover { box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+[data-theme="koralle"] .palette-item.sel { background: rgba(255,255,255,.06); }
+[data-theme="koralle"] .welcome .dash-card { background: rgba(255,255,255,.03); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 2px 0 var(--tc); }
+[data-theme="koralle"] .dash-stats b { background: none; color: var(--text); -webkit-text-fill-color: currentColor; }
+[data-theme="koralle"] .boot { background: var(--bg-1); }
+.sw-koralle { background: conic-gradient(from 210deg, #ff7a5c, #ffc561, #62dcb0, #6cc4ff, #a99cff, #ff7a5c) !important; }
+
+/* Die Sprache der offenen Datei bestimmt die Akzentfarbe: Cursor, aktive Zeilennummer, Sprach-Chip */
+.editor-wrap { --tc: var(--accent-5); }
+.editor-wrap[data-kind="py"] { --tc: var(--accent-3); }
+.editor-wrap[data-kind="c"] { --tc: var(--accent-2); }
+.editor-wrap[data-kind="cpp"] { --tc: var(--accent); }
+.editor-wrap[data-kind="h"] { --tc: var(--accent-4); }
+.editor-wrap { --caret: var(--tc); }
+.editor-wrap .cm-activeLineGutter { color: var(--tc) !important; }
+#sb-lang { --tc: var(--accent-5); }
+#sb-lang[data-kind="py"] { --tc: var(--accent-3); }
+#sb-lang[data-kind="c"] { --tc: var(--accent-2); }
+#sb-lang[data-kind="cpp"] { --tc: var(--accent); }
+#sb-lang[data-kind="h"] { --tc: var(--accent-4); }
+#sb-lang:not(:empty) { padding: 2px 10px; border-radius: 999px; color: var(--tc); background: color-mix(in srgb, var(--tc) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tc) 30%, transparent); }
+[data-theme="classic"] .editor-wrap { --caret: #aeafad; }
+/* Koralle behält im sachlichen Modus seinen eigenen Knopf und sein Logo */
+[data-theme="koralle"] body.pro { --run-grad: linear-gradient(135deg, #ff8f63, #ff6a7d); --holo: linear-gradient(90deg, #ff7a5c, #ffc561); }
+[data-theme="koralle"] body.pro .logo { background: linear-gradient(90deg, var(--text) 35%, var(--accent) 75%, var(--accent-3)); -webkit-background-clip: text; background-clip: text; }

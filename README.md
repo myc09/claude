@@ -4,6 +4,12 @@ Ein Code-Editor im Stil von VS Code, mit dem du **Python, C (und C++)** schreibe
 Er läuft im Browser und lässt sich auf dem Handy **als App installieren**. Deine Dateien liegen zentral auf
 deinem Server, deshalb siehst und bearbeitest du überall denselben Stand, egal ob auf Handy oder PC.
 
+## Themes
+
+Standard ist **Koralle**: eine ruhige Graphit-Oberfläche mit kräftigen Syntax-Farben. Die Sprache der
+offenen Datei färbt Cursor, aktive Zeilennummer, Tab und den Sprach-Chip unten
+(Python Bernstein, C Himmelblau, C++ Koralle). Daneben gibt es Aurora, Neon, Matcha und Klassisch (⋮-Menü oder Strg+K).
+
 ## Downloads
 
 Jede Datei lässt sich herunterladen: per Rechtsklick (oder ⋯) im Explorer → **Herunterladen**.

@@ -144,7 +144,8 @@ function reconfigureAll(effectsFor) {
 // ---------------- Anime-Extras ----------------
 
 const settings = {
-  theme: store.get('theme', 'sakura'),
+  // Neuer Schlüssel, damit alle einmal das neue Standard-Theme „Koralle“ bekommen
+  theme: store.get('theme2', 'koralle'),
   playful: store.get('playful', false),
   fx: store.get('fx', true),
   petals: store.get('petals', true),
@@ -169,7 +170,7 @@ function applySettings() {
   document.body.classList.toggle('no-mascot', !settings.mascot || !settings.playful);
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) themeMeta.content =
-    { sakura: '#1b1033', neon: '#070b1c', matcha: '#0f1d18', classic: '#333333' }[settings.theme];
+    { koralle: '#0d0f15', sakura: '#1b1033', neon: '#070b1c', matcha: '#0f1d18', classic: '#333333' }[settings.theme];
   document.querySelectorAll('[data-theme-pick]').forEach((b) => b.classList.toggle('on', b.dataset.themePick === settings.theme));
 }
 
@@ -201,6 +202,8 @@ function updateStatus(state = view.state) {
   $('sb-pos').textContent = `LN ${line.number}, COL ${head - line.from + 1}`;
   const ext = tab.path.split('.').pop().toLowerCase();
   $('sb-lang').textContent = '⟨/⟩ ' + (LANG_NAMES[ext] || ext.toUpperCase());
+  $('sb-lang').dataset.kind = kindOf(tab.path);
+  $('editor-wrap').dataset.kind = kindOf(tab.path);
 }
 
 function setConn(online) {
@@ -931,7 +934,7 @@ function paletteItems() {
     group: 'Dateien', icon: iconText(p.split('/').pop()), label: p.split('/').pop(), hint: p.includes('/') ? parentOf(p) : '',
     color: KIND_COLOR[kindOf(p)], run: () => openFile(p),
   }));
-  const theme = (id, name) => ({ group: 'Aussehen', icon: '◐', label: `Theme: ${name}`, color: 'var(--accent-4)', run: () => { settings.theme = id; store.set('theme', id); applySettings(); } });
+  const theme = (id, name) => ({ group: 'Aussehen', icon: '◐', label: `Theme: ${name}`, color: 'var(--accent-4)', run: () => { settings.theme = id; store.set('theme2', id); applySettings(); } });
   const cmds = [
     { group: 'Befehle', icon: '▶', label: 'Ausführen', hint: 'Strg+Enter', color: 'var(--ok)', run: runActive },
     { group: 'Befehle', icon: '✦', label: 'Neue Datei …', color: 'var(--accent-5)', run: () => createEntry('file') },
@@ -942,7 +945,7 @@ function paletteItems() {
     settings.playful && { group: 'Befehle', icon: '🏆', label: 'Meine Erfolge', hint: `${achievements.count()}/${Object.keys(ACHIEVEMENTS).length}`, color: 'var(--accent-3)', run: showAchievements },
     { group: 'Befehle', icon: '↓', label: 'Datei herunterladen', color: 'var(--accent-5)', run: () => activeTab() ? downloadPath(activeTab().path) : toast('Keine Datei geöffnet') },
     { group: 'Befehle', icon: '⇩', label: 'Alles als ZIP herunterladen', color: 'var(--accent-5)', run: () => downloadPath() },
-    theme('sakura', 'Aurora'), theme('neon', 'Neon'), theme('matcha', 'Matcha'), theme('classic', 'Klassisch'),
+    theme('koralle', 'Koralle'), theme('sakura', 'Aurora'), theme('neon', 'Neon'), theme('matcha', 'Matcha'), theme('classic', 'Klassisch'),
     { group: 'Aussehen', icon: '◇', label: `Verspielter Modus ${settings.playful ? 'aus' : 'an'}`, hint: 'Maskottchen, Effekte, Level', color: 'var(--accent-4)', run: () => toggleSetting('playful') },
   ];
   if (settings.playful) cmds.push(
@@ -1022,7 +1025,7 @@ $('more-menu').addEventListener('click', async (e) => {
   const pick = e.target.closest('[data-theme-pick]');
   if (pick) {
     settings.theme = pick.dataset.themePick;
-    store.set('theme', settings.theme);
+    store.set('theme2', settings.theme);
     applySettings();
     fx.burst(pick, 10);
     return;
