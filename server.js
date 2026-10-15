@@ -9,6 +9,7 @@ const fs = require('fs');
 const fsp = fs.promises;
 const os = require('os');
 const crypto = require('crypto');
+const zlib = require('zlib');
 const { spawn } = require('child_process');
 const { WebSocketServer } = require('ws');
 
@@ -196,6 +197,95 @@ api.post('/rename', wrap(async (req, res) => {
   broadcast({ type: 'tree' });
   broadcast({ type: 'renamed', from: relPath(from), to: relPath(to) });
   res.json({ ok: true });
+}));
+
+// ---------- Download: einzelne Datei oder Ordner als ZIP ----------
+
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
+function crc32(buf) {
+  let c = 0xffffffff;
+  for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function dosTime(date) {
+  const time = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+  const day = ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+  return { time, day };
+}
+
+// Minimaler ZIP-Writer (Deflate, UTF-8-Dateinamen); reicht für Quelltext-Ordner
+function buildZip(entries) {
+  const locals = [], centrals = [];
+  let offset = 0;
+  for (const { name, data, mtime } of entries) {
+    const nameBuf = Buffer.from(name, 'utf8');
+    const packed = zlib.deflateRawSync(data);
+    const useDeflate = packed.length < data.length;
+    const body = useDeflate ? packed : data;
+    const crc = crc32(data);
+    const { time, day } = dosTime(mtime);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0); local.writeUInt16LE(20, 4); local.writeUInt16LE(0x0800, 6);
+    local.writeUInt16LE(useDeflate ? 8 : 0, 8); local.writeUInt16LE(time, 10); local.writeUInt16LE(day, 12);
+    local.writeUInt32LE(crc, 14); local.writeUInt32LE(body.length, 18); local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(nameBuf.length, 26); local.writeUInt16LE(0, 28);
+    locals.push(local, nameBuf, body);
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0); central.writeUInt16LE(20, 4); central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(0x0800, 8); central.writeUInt16LE(useDeflate ? 8 : 0, 10); central.writeUInt16LE(time, 12);
+    central.writeUInt16LE(day, 14); central.writeUInt32LE(crc, 16); central.writeUInt32LE(body.length, 20);
+    central.writeUInt32LE(data.length, 24); central.writeUInt16LE(nameBuf.length, 28);
+    central.writeUInt32LE(offset, 42);
+    centrals.push(central, nameBuf);
+    offset += 30 + nameBuf.length + body.length;
+  }
+  const centralSize = centrals.reduce((n, b) => n + b.length, 0);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(entries.length, 8); end.writeUInt16LE(entries.length, 10);
+  end.writeUInt32LE(centralSize, 12); end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...locals, ...centrals, end]);
+}
+
+async function collectFiles(dir, base) {
+  const out = [];
+  for (const e of await fsp.readdir(dir, { withFileTypes: true })) {
+    if (e.name === '.codepad' && dir === WORKSPACE) continue;
+    const abs = path.join(dir, e.name);
+    const name = base ? `${base}/${e.name}` : e.name;
+    if (e.isDirectory()) out.push(...await collectFiles(abs, name));
+    else if (e.isFile()) {
+      const st = await fsp.stat(abs);
+      out.push({ name, data: await fsp.readFile(abs), mtime: st.mtime });
+    }
+  }
+  return out;
+}
+
+const attachment = (name) => `attachment; filename="${name.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(name)}`;
+const MAX_ZIP = 200 * 1024 * 1024;
+
+api.get('/download', wrap(async (req, res) => {
+  const rel = typeof req.query.path === 'string' ? req.query.path : '';
+  const abs = rel ? resolvePath(rel) : WORKSPACE;
+  const st = await fsp.stat(abs).catch(() => null);
+  if (!st) throw httpError(404, 'Nicht gefunden');
+  if (st.isFile()) {
+    res.setHeader('Content-Disposition', attachment(path.basename(abs)));
+    res.setHeader('Content-Type', 'application/octet-stream');
+    return fs.createReadStream(abs).pipe(res);
+  }
+  const files = await collectFiles(abs, '');
+  const total = files.reduce((n, f) => n + f.data.length, 0);
+  if (total > MAX_ZIP) throw httpError(413, 'Ordner ist zu groß für einen Download');
+  const zipName = (abs === WORKSPACE ? 'codepad-workspace' : path.basename(abs)) + '.zip';
+  res.setHeader('Content-Disposition', attachment(zipName));
+  res.setHeader('Content-Type', 'application/zip');
+  res.end(buildZip(files));
 }));
 
 api.delete('/file', wrap(async (req, res) => {

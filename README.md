@@ -4,6 +4,17 @@ Ein Code-Editor im Stil von VS Code, mit dem du **Python, C (und C++)** schreibe
 Er läuft im Browser und lässt sich auf dem Handy **als App installieren**. Deine Dateien liegen zentral auf
 deinem Server, deshalb siehst und bearbeitest du überall denselben Stand, egal ob auf Handy oder PC.
 
+## Downloads
+
+Jede Datei lässt sich herunterladen: per Rechtsklick (oder ⋯) im Explorer → **Herunterladen**.
+Ordner kommen als ZIP, der Download-Knopf oben im Explorer packt den ganzen Arbeitsbereich in ein ZIP.
+Auch über das ⋮-Menü und die Befehlspalette (Strg+K) erreichbar.
+
+## Verspielter Modus
+
+Standardmäßig ist CodePad sachlich gehalten. Über ⋮ → **Verspielter Modus** kommen
+Maskottchen, Effekte, Level und Erfolge dazu:
+
 ## Anime-Look ✿
 
 - **4 Themes:** Sakura Night 桜, Neon Tokyo 夜, Matcha 茶 und Klassisch (VS-Code-Stil ohne Effekte), wählbar über das ⋮-Menü

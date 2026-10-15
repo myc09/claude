@@ -87,7 +87,7 @@ $('login-form').addEventListener('submit', async (e) => {
     start();
   } else {
     const data = await res.json().catch(() => ({}));
-    $('login-error').textContent = (data.error || 'Anmeldung fehlgeschlagen') + ' (╥﹏╥)';
+    $('login-error').textContent = data.error || 'Anmeldung fehlgeschlagen';
     mascot.set('sad', '', 2500);
   }
 });
@@ -145,12 +145,14 @@ function reconfigureAll(effectsFor) {
 
 const settings = {
   theme: store.get('theme', 'sakura'),
+  playful: store.get('playful', false),
   fx: store.get('fx', true),
   petals: store.get('petals', true),
   mascot: store.get('mascot', true),
 };
 const sakura = new Sakura();
 const achievements = new Achievements(store, () => { fx.confetti(); renderWelcome(); });
+const unlock = (id) => { if (settings.playful) achievements.unlock(id); };
 const mascot = new Mascot($('mascot-home'));
 let combo = null;
 let progress = null;
@@ -159,10 +161,12 @@ let lastRunFailed = false;
 
 function applySettings() {
   document.documentElement.dataset.theme = settings.theme;
-  const anime = settings.theme !== 'classic';
+  // Standard ist der sachliche Modus; Maskottchen, Blüten und Spiel-Elemente nur im verspielten Modus
+  const anime = settings.theme !== 'classic' && settings.playful;
   fx.enabled = settings.fx && anime;
   sakura.setEnabled(settings.petals && anime);
-  document.body.classList.toggle('no-mascot', !settings.mascot);
+  document.body.classList.toggle('pro', !settings.playful);
+  document.body.classList.toggle('no-mascot', !settings.mascot || !settings.playful);
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) themeMeta.content =
     { sakura: '#1b1033', neon: '#070b1c', matcha: '#0f1d18', classic: '#333333' }[settings.theme];
@@ -170,6 +174,7 @@ function applySettings() {
 }
 
 function onTyping(update) {
+  if (!settings.playful) return;
   if (!update.transactions.some((tr) => tr.isUserEvent('input') || tr.isUserEvent('delete'))) return;
   let inserted = 0;
   update.changes.iterChanges((fa, ta, fb, tb, text) => { inserted += text.length; });
@@ -212,11 +217,11 @@ setInterval(tickClock, 15000);
 
 function checkNight() {
   const h = new Date().getHours();
-  if (h >= 23 || h < 4) achievements.unlock('night');
+  if (h >= 23 || h < 4) unlock('night');
 }
 
 function onLevelUp(level) {
-  if (level >= 5) achievements.unlock('level5');
+  if (level >= 5) unlock('level5');
   levelBanner(level);
   fx.confetti();
   if (settings.petals) sakura.storm();
@@ -540,7 +545,7 @@ async function createEntry(type, dir = '', preset = null) {
     if (type === 'file' && res.template?.content && (!res.template.ext || path.endsWith(res.template.ext))) {
       await api('PUT', '/file', { path, content: res.template.content, clientId });
     }
-    if (type === 'file') achievements.unlock('creator');
+    if (type === 'file') unlock('creator');
     if (dir) expanded.add(dir);
     if (type === 'dir') expanded.add(path);
     store.set('expanded', [...expanded]);
@@ -603,6 +608,7 @@ function nodeMenu(node, e) {
       } catch (err) { if (!(err instanceof AuthError)) toast(err.message, true); }
     }],
   ];
+  items.splice(2, 0, [node.type === 'dir' ? 'Als ZIP herunterladen' : 'Herunterladen', () => downloadPath(node.path)]);
   if (node.type === 'file' && isRunnable(node.path)) items.unshift(['Ausführen', async () => { await openFile(node.path); runActive(); }]);
   for (const [label, fn] of items) {
     const b = document.createElement('button');
@@ -854,14 +860,16 @@ function finishRun(text, ok = false) {
   if (ok) {
     mascot.say('ok');
     fx.confetti();
-    progress.add(lastRunFailed ? 25 : 15);
-    if (lastRunFailed) { toast('Bug besiegt! +25 XP ⚔️'); achievements.unlock('bugfix'); }
+    if (settings.playful) {
+      progress.add(lastRunFailed ? 25 : 15);
+      if (lastRunFailed) { toast('Bug besiegt! +25 XP ⚔️'); unlock('bugfix'); }
+    }
     const runs = achievements.bump('runs');
-    achievements.unlock('firstRun');
-    if (/\.py$/i.test(runningPath || '')) achievements.unlock('firstPy');
-    if (/\.(c|cpp|cc)$/i.test(runningPath || '')) achievements.unlock('firstC');
-    if (runs >= 10) achievements.unlock('runs10');
-    if (runs >= 50) achievements.unlock('runs50');
+    unlock('firstRun');
+    if (/\.py$/i.test(runningPath || '')) unlock('firstPy');
+    if (/\.(c|cpp|cc)$/i.test(runningPath || '')) unlock('firstC');
+    if (runs >= 10) unlock('runs10');
+    if (runs >= 50) unlock('runs50');
     checkNight();
   } else if (!/gestoppt/.test(text)) {
     mascot.say('error');
@@ -889,6 +897,24 @@ function sendEof() {
   if (running && ws) { ws.send('{"type":"eof"}'); append('^D\n', 'stdin-echo'); }
 }
 
+// ---------------- Downloads ----------------
+
+// Lädt eine Datei herunter, einen Ordner als ZIP, ohne Pfad den ganzen Arbeitsbereich als ZIP
+async function downloadPath(path = '') {
+  for (const t of tabs) if (!path || t.path === path || t.path.startsWith(path + '/')) await saveTab(t);
+  // Die Online-Demo hat keinen Server und stellt eigene Downloads bereit
+  if (window.__codepadDownload) {
+    try { await window.__codepadDownload(path); } catch (e) { if (e?.message) toast(e.message, true); }
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = '/api/download' + (path ? '?path=' + encodeURIComponent(path) : '');
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 // ---------------- Befehlspalette ----------------
 
 function allFiles() {
@@ -913,20 +939,26 @@ function paletteItems() {
     { group: 'Befehle', icon: '⌕', label: 'Im Code suchen', hint: 'Strg+F', color: 'var(--accent-2)', run: () => activeTab() && openSearchPanel(view) },
     { group: 'Befehle', icon: '☰', label: 'Explorer ein/aus', hint: 'Strg+B', color: 'var(--accent-2)', run: toggleSidebar },
     { group: 'Befehle', icon: '▭', label: 'Terminal ein/aus', hint: 'Strg+J', color: 'var(--accent-2)', run: () => togglePanel() },
-    { group: 'Befehle', icon: '🏆', label: 'Meine Erfolge', hint: `${achievements.count()}/${Object.keys(ACHIEVEMENTS).length}`, color: 'var(--accent-3)', run: showAchievements },
-    theme('sakura', 'Sakura Night 桜'), theme('neon', 'Neon Tokyo 夜'), theme('matcha', 'Matcha 茶'), theme('classic', 'Klassisch'),
+    settings.playful && { group: 'Befehle', icon: '🏆', label: 'Meine Erfolge', hint: `${achievements.count()}/${Object.keys(ACHIEVEMENTS).length}`, color: 'var(--accent-3)', run: showAchievements },
+    { group: 'Befehle', icon: '↓', label: 'Datei herunterladen', color: 'var(--accent-5)', run: () => activeTab() ? downloadPath(activeTab().path) : toast('Keine Datei geöffnet') },
+    { group: 'Befehle', icon: '⇩', label: 'Alles als ZIP herunterladen', color: 'var(--accent-5)', run: () => downloadPath() },
+    theme('sakura', 'Aurora'), theme('neon', 'Neon'), theme('matcha', 'Matcha'), theme('classic', 'Klassisch'),
+    { group: 'Aussehen', icon: '◇', label: `Verspielter Modus ${settings.playful ? 'aus' : 'an'}`, hint: 'Maskottchen, Effekte, Level', color: 'var(--accent-4)', run: () => toggleSetting('playful') },
+  ];
+  if (settings.playful) cmds.push(
     { group: 'Aussehen', icon: '✦', label: 'Effekte an/aus', color: 'var(--accent-4)', run: () => toggleSetting('fx') },
     { group: 'Aussehen', icon: '✿', label: 'Sakura-Blüten an/aus', color: 'var(--accent-4)', run: () => toggleSetting('petals') },
     { group: 'Aussehen', icon: '♡', label: 'Code-chan an/aus', color: 'var(--accent-4)', run: () => toggleSetting('mascot') },
-  ];
-  return [...files, ...cmds];
+  );
+  return [...files, ...cmds.filter(Boolean)];
 }
 
 function toggleSetting(key) {
   settings[key] = !settings[key];
   store.set(key, settings[key]);
   applySettings();
-  toast(`${{ fx: 'Effekte', petals: 'Sakura-Blüten', mascot: 'Code-chan' }[key]} ${settings[key] ? 'an ✨' : 'aus'}`);
+  toast(`${{ fx: 'Effekte', petals: 'Sakura-Blüten', mascot: 'Code-chan', playful: 'Verspielter Modus' }[key]} ${settings[key] ? 'an' : 'aus'}`);
+  renderWelcome();
 }
 
 function showAchievements() {
@@ -948,17 +980,23 @@ function renderWelcome() {
       <button class="dash-card" data-new="0" style="--tc:var(--accent-3)"><b>py</b><span>Neue Python-Datei</span></button>
       <button class="dash-card" data-new="1" style="--tc:var(--accent-2)"><b>C</b><span>Neue C-Datei</span></button>
       <button class="dash-card" data-pal style="--tc:var(--accent-4)"><b>⌘K</b><span>Befehle &amp; Dateien</span></button>
+      <button class="dash-card" data-zip style="--tc:var(--accent-5)"><b>ZIP</b><span>Alles herunterladen</span></button>
     </div>
-    <div class="dash-stats">
+    <div class="dash-stats">${settings.playful ? `
       <div><b>Lv.${lv}</b><span>Level</span></div>
       <div><b>${progress.xp}</b><span>XP</span></div>
       <div><b>${achievements.stats.runs || 0}</b><span>Läufe</span></div>
-      <div><b>${achievements.count()}/${Object.keys(ACHIEVEMENTS).length}</b><span>Erfolge</span></div>
+      <div><b>${achievements.count()}/${Object.keys(ACHIEVEMENTS).length}</b><span>Erfolge</span></div>` : `
+      <div><b>${allFiles().length}</b><span>Dateien</span></div>
+      <div><b>${achievements.stats.runs || 0}</b><span>Läufe</span></div>
+      <div><b>${tabs.length}</b><span>Offene Tabs</span></div>
+      <div><b>${new Set(allFiles().map((p) => kindOf(p))).size}</b><span>Sprachen</span></div>`}
     </div>
     ${recent.length ? `<div class="dash-recent"><div class="dash-label">ZULETZT GEÖFFNET</div>${recent.map((p) =>
       `<button class="dash-file" data-open="${p.replace(/"/g, '&quot;')}" style="--tc:${KIND_COLOR[kindOf(p)]}"><span class="ficon">${iconText(p.split('/').pop())}</span>${p.replace(/</g, '&lt;')}</button>`).join('')}</div>` : ''}`;
   el.querySelectorAll('[data-new]').forEach((b) => (b.onclick = () => createEntry('file', '', TEMPLATES[Number(b.dataset.new)])));
   el.querySelector('[data-pal]').onclick = () => openPalette(paletteItems);
+  el.querySelector('[data-zip]').onclick = () => downloadPath();
   el.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => openFile(b.dataset.open)));
 }
 
@@ -975,6 +1013,7 @@ $('btn-panel').addEventListener('click', () => togglePanel());
 $('btn-search').addEventListener('click', () => { if (activeTab()) openSearchPanel(view); });
 $('btn-new-file').addEventListener('click', () => createEntry('file'));
 $('btn-new-folder').addEventListener('click', () => createEntry('dir'));
+$('btn-download-all').addEventListener('click', () => downloadPath());
 $('btn-refresh').addEventListener('click', () => { loadTree(); syncOpenTabs(); });
 $('btn-more').addEventListener('click', () => $('more-menu').classList.toggle('hidden'));
 $('panel').querySelector('.panel-head').addEventListener('dblclick', () => togglePanel());
@@ -1008,12 +1047,12 @@ $('more-menu').addEventListener('click', async (e) => {
     store.set('keys', on);
   } else if (action === 'download') {
     const tab = activeTab();
-    if (!tab) return;
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([tabContent(tab)], { type: 'text/plain' }));
-    a.download = tab.path.split('/').pop();
-    a.click();
-    URL.revokeObjectURL(a.href);
+    if (tab) downloadPath(tab.path);
+    else toast('Keine Datei geöffnet');
+  } else if (action === 'download-all') {
+    downloadPath();
+  } else if (action === 'playful') {
+    toggleSetting('playful');
   } else if (action === 'logout') {
     await saveAll();
     await fetch('/api/logout', { method: 'POST' });
@@ -1053,8 +1092,8 @@ async function start() {
   combo = new Combo($('editor-wrap'), (n) => {
     mascot.say('combo');
     progress.add(Math.round(n / 5));
-    if (n >= 50) achievements.unlock('combo50');
-    if (n >= 100) achievements.unlock('combo100');
+    if (n >= 50) unlock('combo50');
+    if (n >= 100) unlock('combo100');
   });
   progress = new Progress(store, onLevelUp);
   setupResizers();

@@ -317,4 +317,63 @@ class DemoSocket {
   close() { this.readyState = 3; sockets.delete(this); }
 }
 window.WebSocket = DemoSocket;
+
+// ---------------- Downloads in der Demo ----------------
+// Der Download-Dialog der Seite erlaubt nur bestimmte Endungen (kein .py/.c),
+// deshalb kommt jede Auswahl als ZIP, das die Dateien mit Originalnamen enthält.
+
+const CRC = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
+function crc32(bytes) {
+  let c = 0xffffffff;
+  for (const b of bytes) c = CRC[(c ^ b) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function zipStore(entries) {
+  const enc = new TextEncoder();
+  const parts = [], central = [];
+  let offset = 0;
+  for (const { name, content } of entries) {
+    const n = enc.encode(name), d = enc.encode(content), crc = crc32(d);
+    const head = new DataView(new ArrayBuffer(30));
+    head.setUint32(0, 0x04034b50, true); head.setUint16(4, 20, true); head.setUint16(6, 0x0800, true);
+    head.setUint32(14, crc, true); head.setUint32(18, d.length, true); head.setUint32(22, d.length, true);
+    head.setUint16(26, n.length, true);
+    parts.push(head.buffer, n, d);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint32(16, crc, true); c.setUint32(20, d.length, true); c.setUint32(24, d.length, true);
+    c.setUint16(28, n.length, true); c.setUint32(42, offset, true);
+    central.push(c.buffer, n);
+    offset += 30 + n.length + d.length;
+  }
+  const size = central.reduce((s, b) => s + b.byteLength, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true);
+  end.setUint32(12, size, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
+}
+
+window.__codepadDownload = async (rawPath) => {
+  const p = clean(rawPath);
+  const files = loadFs().files;
+  const picked = Object.keys(files).filter((k) => !p || k === p || k.startsWith(p + '/'));
+  if (!picked.length) throw new Error('Nichts zum Herunterladen gefunden');
+  const base = p.includes('/') ? p.slice(0, p.lastIndexOf('/') + 1) : '';
+  const entries = picked.map((k) => ({ name: files[p] ? k.split('/').pop() : k.slice(base.length), content: files[k].content }));
+  const filename = (p ? p.split('/').pop() : 'codepad-workspace') + '.zip';
+  const downloads = window.claude?.use ? await window.claude.use('downloads') : null;
+  if (!downloads) throw new Error('Downloads sind in dieser Ansicht nicht verfügbar');
+  try {
+    await downloads.save({ filename, data: zipStore(entries) });
+  } catch (e) {
+    if (e?.code === 'declined') return;
+    if (e?.code === 'rate_limited') throw new Error('Gerade läuft schon ein Download. Versuch es gleich noch einmal.');
+    throw new Error('Download nicht möglich');
+  }
+};
 window.__CODEPAD_DEMO__ = true;

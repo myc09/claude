@@ -75,7 +75,7 @@
 /* ================= Basis ================= */
 :root {
   --sidebar-w: 250px;
-  --ui: 'M PLUS Rounded 1c', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -222,7 +222,7 @@ svg .fill { fill: currentColor; stroke: none; }
 .tab .close:hover { background: var(--chip); color: var(--accent); }
 .tab .close svg { width: 13px; height: 13px; }
 .tab.dirty .close svg { display: none; }
-.tab.dirty .close::after { content: '♡'; color: var(--accent); font-size: 13px; font-weight: 800; }
+.tab.dirty .close::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--tc, var(--accent)); }
 .tab.dirty .close:hover svg { display: block; }
 .tab.dirty .close:hover::after { display: none; }
 [data-theme="classic"] .tab.dirty .close::after { content: '●'; color: inherit; }
@@ -489,7 +489,7 @@ body.no-mascot .output { padding-right: 18px; }
 .tab[data-kind="h"], .node[data-kind="h"] { --tc: var(--accent-4); }
 .ic-py { color: var(--accent-3); } .ic-c { color: var(--accent-2); } .ic-cpp { color: var(--accent); } .ic-h { color: var(--accent-4); } .ic-dir { color: var(--accent-5); }
 .tab.active { background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 26%, transparent), rgba(255,255,255,.03)); box-shadow: inset 0 2px 0 var(--tc), 0 -4px 18px color-mix(in srgb, var(--tc) 30%, transparent); }
-.tab.dirty .close::after { color: var(--tc); }
+.tab.dirty .close::after { background: var(--tc); }
 .node.active { background: linear-gradient(90deg, color-mix(in srgb, var(--tc) 28%, transparent), transparent); box-shadow: inset 3px 0 0 var(--tc); }
 .node:hover { background: color-mix(in srgb, var(--tc) 12%, transparent); }
 
@@ -649,7 +649,7 @@ body.no-mascot .output { padding-right: 18px; }
   .xp-bar { width: 38px; }
   .save-state { font-size: 0; }
   .save-state:not(:empty)::before { content: '✓'; font-size: 13px; }
-  .save-state.dirty::before { content: '♡'; }
+  .save-state.dirty::before { content: '●'; }
   .save-state.error::before { content: '⚠'; }
   .brand { display: none; }
   .tab { padding-left: 10px; }
@@ -687,3 +687,34 @@ body.no-mascot .output { padding-right: 18px; }
 
 /* Online-Demo-Kennzeichnung */
 .demo-badge { flex: none; padding: 3px 8px; border-radius: 999px; font: 800 10px var(--mono); letter-spacing: 2px; color: var(--on-accent); background: var(--holo); box-shadow: 0 0 12px var(--accent-soft); cursor: help; }
+
+/* ================= Sachlicher Modus (Standard) ================= */
+/* Logo-Zeichen */
+.mark { width: 22px; height: 22px; display: block; color: var(--h4); }
+.mark path { color: var(--h5); stroke: var(--h5); }
+.brand { animation: none; text-shadow: none; display: grid; place-items: center; }
+.brand .mark { filter: drop-shadow(0 0 6px var(--accent-soft)); }
+.boot-core .mark { width: 34px; height: 34px; }
+.boot-core { animation: none; text-shadow: none; }
+.login-mark { display: none; }
+.login-mark .mark { width: 56px; height: 56px; filter: drop-shadow(0 0 14px var(--accent-soft)); }
+.menu .swatch { border-radius: 50%; width: 36px; height: 36px; }
+
+body.pro {
+  --holo: linear-gradient(90deg, var(--h4), var(--h5));
+  --run-grad: linear-gradient(120deg, var(--h4), var(--h5), var(--h4));
+}
+body.pro .xp, body.pro .combo, body.pro .playful-only, body.pro .login-mascot { display: none !important; }
+body.pro .login-mark { display: block; margin-bottom: 4px; }
+body.pro .logo { background: linear-gradient(90deg, var(--text), var(--h4) 70%, var(--h5)); -webkit-background-clip: text; background-clip: text; filter: none; letter-spacing: -1px; font-weight: 700; }
+body.pro .logo-jp { background: none; color: var(--text-dim); -webkit-text-fill-color: currentColor; letter-spacing: .5px; font-weight: 500; font-size: 13px; }
+body.pro .glass::before { opacity: .32; }
+body.pro .hud::after { opacity: .45; }
+body.pro .run-btn, body.pro .btn.primary, body.pro .login-box button { animation: none; background-size: 100% 100%; }
+body.pro .run-btn::before { animation-duration: 6s; }
+body.pro .topbar::after { opacity: .5; }
+body.pro .boot-ring { animation-duration: 1.8s; }
+body.pro .welcome h2 { font-size: 40px; }
+body.pro .cm-indent-0, body.pro .cm-indent-1, body.pro .cm-indent-2, body.pro .cm-indent-3, body.pro .cm-indent-4 { background-color: transparent; border-radius: 0; }
+body.pro .cm-indent { box-shadow: inset 1px 0 0 rgba(255,255,255,.1); }
+body.pro .tab.active { box-shadow: inset 0 2px 0 var(--tc); }

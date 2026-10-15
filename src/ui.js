@@ -131,7 +131,7 @@ export function openPalette(getItems, placeholder = 'Datei oder Befehl suchen �
         <kbd>ESC</kbd>
       </div>
       <div class="palette-list" role="listbox"></div>
-      <div class="palette-foot"><span><kbd>↑</kbd><kbd>↓</kbd> wählen</span><span><kbd>↵</kbd> öffnen</span><span class="palette-jp">コマンド</span></div>
+      <div class="palette-foot"><span><kbd>↑</kbd><kbd>↓</kbd> wählen</span><span><kbd>↵</kbd> öffnen</span><span class="palette-jp">CodePad</span></div>
     </div>`);
   const input = wrap.querySelector('input');
   const list = wrap.querySelector('.palette-list');
@@ -144,7 +144,7 @@ export function openPalette(getItems, placeholder = 'Datei oder Befehl suchen �
       .filter((x) => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 40).map((x) => x.it);
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     let group = null;
-    list.innerHTML = shown.length ? '' : '<div class="palette-empty">Nichts gefunden (｡•́︿•̀｡)</div>';
+    list.innerHTML = shown.length ? '' : '<div class="palette-empty">Nichts gefunden</div>';
     shown.forEach((it, i) => {
       if (!q && it.group !== group) {
         group = it.group;
@@ -215,7 +215,7 @@ export class Achievements {
     const a = ACHIEVEMENTS[id];
     const el = document.createElement('div');
     el.className = 'achievement glass';
-    el.innerHTML = `<div class="ach-icon">${a.icon}</div><div><div class="ach-top">ERFOLG FREIGESCHALTET · 実績解除</div><div class="ach-title">${esc(a.title)}</div><div class="ach-desc">${esc(a.desc)}</div></div>`;
+    el.innerHTML = `<div class="ach-icon">${a.icon}</div><div><div class="ach-top">ERFOLG FREIGESCHALTET</div><div class="ach-title">${esc(a.title)}</div><div class="ach-desc">${esc(a.desc)}</div></div>`;
     // Mehrere Erfolge gleichzeitig stapeln sich untereinander
     let stack = document.querySelector('.ach-stack');
     if (!stack) { stack = document.createElement('div'); stack.className = 'ach-stack'; document.body.appendChild(stack); }
